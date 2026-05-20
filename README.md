@@ -20,9 +20,7 @@ O firmware atua como um sistema ciber-físico completo, gerenciando de forma con
 
 O firmware armazena na memória flash (`PROGMEM`) um painel completo em HTML5, CSS3 avançado e JavaScript puro. A interface adota uma estética premium de ficção científica (cyberpunk/holográfico) com efeitos de neon, gráficos dinâmicos de agulha e tabelas de histórico que mostram os slots de memória e o status da conexão em tempo real.
 
-Abaixo está o design visual do painel de monitoramento do sistema:
 
-![Mockup do Dashboard Holográfico](mockup_dashboard.png)
 
 ---
 
