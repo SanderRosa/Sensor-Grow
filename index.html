@@ -1,32 +1,29 @@
 <!DOCTYPE html>
 <html lang="pt-br">
-
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Sensor Grow IoT — Dashboard Holográfico</title>
-    <meta name="description" content="Painel de monitoramento IoT em tempo real para cultivo inteligente. ESP32 com sensores DHT22 e solo capacitivo.">
+    <title>Sensor Grow IoT — Dashboard</title>
+    <meta name="description" content="Painel IoT em tempo real para cultivo inteligente. ESP32 + DHT22 + Sensores Capacitivos de Solo.">
     <link href="https://fonts.googleapis.com/css2?family=Rajdhani:wght@400;500;600;700&family=Orbitron:wght@400;700;900&display=swap" rel="stylesheet">
     <style>
         :root {
-            --bg: #0a0f0a;
-            --bg2: #0d150d;
-            --card: #111811;
-            --card2: #0c120c;
-            --green: #00e676;
-            --green-dim: #00c853;
-            --green-glow: rgba(0, 230, 118, 0.35);
-            --green-faint: rgba(0, 230, 118, 0.08);
-            --cyan: #18ffff;
-            --yellow: #ffea00;
-            --red: #ff5252;
-            --text: #cce8cc;
-            --text-muted: #4a6e4a;
-            --border: rgba(0, 230, 118, 0.18);
-            --border-bright: rgba(0, 230, 118, 0.4);
+            --bg:          #070d07;
+            --card:        #0e160e;
+            --card-hi:     #121d12;
+            --green:       #00e676;
+            --green2:      #69f0ae;
+            --green-dim:   #00c853;
+            --green-dark:  #004d1a;
+            --glow:        rgba(0,230,118,0.45);
+            --glow-sm:     rgba(0,230,118,0.2);
+            --text:        #d4edda;
+            --muted:       #3d5c3d;
+            --border:      rgba(0,230,118,0.15);
+            --border2:     rgba(0,230,118,0.35);
         }
 
-        * { margin: 0; padding: 0; box-sizing: border-box; }
+        *, *::before, *::after { margin:0; padding:0; box-sizing:border-box; }
 
         body {
             background: var(--bg);
@@ -35,86 +32,71 @@
             min-height: 100vh;
             display: flex;
             justify-content: center;
-            align-items: flex-start;
-            padding: 0 0 20px;
+            padding: 0 0 30px;
             background-image:
-                radial-gradient(ellipse at top, rgba(0, 230, 118, 0.04) 0%, transparent 60%),
-                linear-gradient(rgba(0, 230, 118, 0.02) 1px, transparent 1px),
-                linear-gradient(90deg, rgba(0, 230, 118, 0.02) 1px, transparent 1px);
-            background-size: 100% 100%, 30px 30px, 30px 30px;
+                radial-gradient(ellipse 80% 40% at 50% 0%, rgba(0,230,118,0.06) 0%, transparent 70%),
+                linear-gradient(rgba(0,230,118,0.018) 1px, transparent 1px),
+                linear-gradient(90deg, rgba(0,230,118,0.018) 1px, transparent 1px);
+            background-size: 100%, 28px 28px, 28px 28px;
         }
 
-        .app {
-            width: 100%;
-            max-width: 400px;
-            display: flex;
-            flex-direction: column;
-            gap: 0;
-        }
+        .app { width: 100%; max-width: 400px; display: flex; flex-direction: column; }
 
-        /* ─── HEADER ─────────────────────────────── */
-        .header {
+        /* ── HEADER ──────────────────────────────────────────── */
+        header {
             display: flex;
             justify-content: space-between;
             align-items: center;
-            padding: 20px 18px 14px;
+            padding: 22px 20px 10px;
         }
-
-        .header-title {
-            display: flex;
-            align-items: center;
-            gap: 10px;
+        .logo { display: flex; align-items: center; gap: 10px; }
+        .logo-icon {
+            width: 38px; height: 38px;
+            background: linear-gradient(135deg, #003d14, #00541c);
+            border: 1px solid var(--border2);
+            border-radius: 10px;
+            display: flex; align-items: center; justify-content: center;
+            box-shadow: 0 0 16px rgba(0,230,118,0.25), inset 0 1px 0 rgba(0,230,118,0.15);
         }
-
-        .header-title svg { color: var(--green); filter: drop-shadow(0 0 6px var(--green-glow)); }
-
-        .header-title h1 {
+        .logo-icon svg { color: var(--green); filter: drop-shadow(0 0 5px var(--glow)); }
+        .logo h1 {
             font-family: 'Orbitron', monospace;
-            font-size: 1.2rem;
-            font-weight: 700;
-            color: var(--text);
-            letter-spacing: 1px;
+            font-size: 1.15rem; font-weight: 700;
+            letter-spacing: 1.5px;
+            background: linear-gradient(90deg, var(--green2), var(--green));
+            -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+            text-shadow: none;
         }
-
-        .header-avatar {
-            width: 36px;
-            height: 36px;
-            border: 1px solid var(--border-bright);
-            border-radius: 50%;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            color: var(--text-muted);
-            background: var(--card);
+        .header-right { display: flex; align-items: center; gap: 10px; }
+        .pill {
+            display: flex; align-items: center; gap: 6px;
+            padding: 5px 12px;
+            background: rgba(0,230,118,0.07);
+            border: 1px solid var(--border);
+            border-radius: 20px;
+            font-size: 0.65rem; letter-spacing: 2px; text-transform: uppercase; color: var(--muted);
         }
-
-        .status-bar {
-            margin: 0 18px 12px;
-            display: flex;
-            align-items: center;
-            gap: 8px;
-            font-size: 0.75rem;
-            color: var(--text-muted);
-            text-transform: uppercase;
-            letter-spacing: 2px;
-        }
-
-        .status-dot {
-            width: 6px;
-            height: 6px;
-            border-radius: 50%;
+        .pill-dot {
+            width: 6px; height: 6px; border-radius: 50%;
             background: var(--green);
             box-shadow: 0 0 8px var(--green);
-            animation: pulse 2s ease-in-out infinite;
+            animation: blink 2s ease-in-out infinite;
+        }
+        @keyframes blink { 0%,100%{opacity:1} 50%{opacity:0.4} }
+
+        /* ── SECTION LABEL ───────────────────────────────────── */
+        .sec-label {
+            display: flex; align-items: center; gap: 8px;
+            padding: 14px 20px 8px;
+            font-size: 0.6rem; letter-spacing: 3px; text-transform: uppercase; color: var(--muted);
+        }
+        .sec-label::after {
+            content: ''; flex: 1; height: 1px;
+            background: linear-gradient(90deg, var(--border), transparent);
         }
 
-        @keyframes pulse {
-            0%, 100% { opacity: 1; box-shadow: 0 0 8px var(--green); }
-            50% { opacity: 0.6; box-shadow: 0 0 4px var(--green); }
-        }
-
-        /* ─── GAUGE CARDS ────────────────────────── */
-        .gauges-row {
+        /* ── GAUGE GRID ──────────────────────────────────────── */
+        .gauge-grid {
             display: grid;
             grid-template-columns: 1fr 1fr;
             gap: 10px;
@@ -125,72 +107,69 @@
         .gauge-card {
             background: var(--card);
             border: 1px solid var(--border);
-            border-radius: 16px;
-            padding: 14px 10px;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            gap: 6px;
-            position: relative;
-            overflow: hidden;
-            box-shadow: inset 0 0 30px rgba(0,230,118,0.03);
+            border-radius: 20px;
+            padding: 18px 10px 14px;
+            display: flex; flex-direction: column; align-items: center; gap: 4px;
+            position: relative; overflow: hidden;
+            /* Glass shimmer top */
+            box-shadow:
+                inset 0 1px 0 rgba(0,230,118,0.12),
+                inset 0 -1px 0 rgba(0,0,0,0.4),
+                0 8px 32px rgba(0,0,0,0.5);
         }
-
+        /* Cantos decorativos */
+        .gauge-card::before, .gauge-card::after {
+            content:''; position:absolute; width:14px; height:14px;
+        }
         .gauge-card::before {
-            content: '';
-            position: absolute;
-            top: 0; left: 0; right: 0;
-            height: 1px;
-            background: linear-gradient(90deg, transparent, var(--green-dim), transparent);
+            top:-1px; left:-1px;
+            border-top: 2px solid var(--green-dim); border-left: 2px solid var(--green-dim);
+            border-radius: 20px 0 0 0;
+        }
+        .gauge-card::after {
+            bottom:-1px; right:-1px;
+            border-bottom: 2px solid var(--green-dim); border-right: 2px solid var(--green-dim);
+            border-radius: 0 0 20px 0;
+        }
+        /* Reflexo de vidro */
+        .gauge-card .glass {
+            position: absolute; top:0; left:0; right:0; height:40%;
+            background: linear-gradient(180deg, rgba(255,255,255,0.03), transparent);
+            border-radius: 20px 20px 0 0;
+            pointer-events: none;
         }
 
-        .gauge-label {
-            font-size: 0.6rem;
-            color: var(--text-muted);
-            text-transform: uppercase;
-            letter-spacing: 2px;
+        .gauge-tag {
+            font-size: 0.58rem; letter-spacing: 2.5px; text-transform: uppercase;
+            color: var(--muted); margin-bottom: 4px;
         }
 
-        .gauge-wrap {
-            position: relative;
-            width: 130px;
-            height: 130px;
-        }
-
+        /* SVG GAUGE */
+        .gauge-svg-wrap { position: relative; width: 148px; height: 148px; }
         .gauge-svg { width: 100%; height: 100%; }
 
         .gauge-center {
-            position: absolute;
-            top: 50%;
-            left: 50%;
+            position: absolute; top:50%; left:50%;
             transform: translate(-50%, -46%);
-            text-align: center;
+            text-align: center; pointer-events: none;
         }
-
-        .gauge-val {
+        .gauge-num {
             font-family: 'Orbitron', monospace;
-            font-size: 1.6rem;
-            font-weight: 700;
+            font-size: 2rem; font-weight: 900; line-height: 1;
             color: var(--text);
-            line-height: 1;
-            text-shadow: 0 0 12px var(--green-glow);
+            text-shadow: 0 0 20px var(--glow), 0 0 8px var(--glow);
         }
-
         .gauge-unit {
-            font-size: 0.65rem;
-            color: var(--text-muted);
-            margin-top: 2px;
+            font-size: 0.7rem; color: var(--muted); margin-top: 2px;
+            font-family: 'Rajdhani', sans-serif; letter-spacing: 1px;
         }
-
         .gauge-hint {
-            font-size: 0.6rem;
-            color: var(--text-muted);
-            text-align: center;
-            line-height: 1.3;
+            font-size: 0.58rem; color: var(--muted); letter-spacing: 0.5px;
+            text-align: center; margin-top: 2px;
         }
 
-        /* ─── SOIL CARDS ─────────────────────────── */
-        .soil-row {
+        /* ── SOIL GRID ───────────────────────────────────────── */
+        .soil-grid {
             display: grid;
             grid-template-columns: 1fr 1fr;
             gap: 10px;
@@ -201,590 +180,548 @@
         .soil-card {
             background: var(--card);
             border: 1px solid var(--border);
-            border-radius: 16px;
-            padding: 14px 12px;
-            position: relative;
-            overflow: hidden;
+            border-radius: 18px;
+            padding: 14px 14px 12px;
+            position: relative; overflow: hidden;
+            box-shadow: inset 0 1px 0 rgba(0,230,118,0.1), 0 6px 20px rgba(0,0,0,0.4);
         }
-
         .soil-card::before {
-            content: '';
-            position: absolute;
-            top: 0; left: 0; right: 0;
-            height: 1px;
-            background: linear-gradient(90deg, transparent, var(--green-dim), transparent);
+            content:''; position:absolute; top:-1px; left:-1px; width:12px; height:12px;
+            border-top: 2px solid var(--green-dim); border-left: 2px solid var(--green-dim);
+            border-radius: 18px 0 0 0;
         }
 
-        .soil-header {
-            margin-bottom: 8px;
+        .soil-name {
+            font-size: 0.58rem; letter-spacing: 2px; text-transform: uppercase;
+            color: var(--green-dim); font-weight: 700; margin-bottom: 1px;
         }
+        .soil-sub { font-size: 0.5rem; color: var(--muted); margin-bottom: 10px; }
 
-        .soil-title {
-            font-size: 0.6rem;
-            color: var(--green-dim);
-            text-transform: uppercase;
-            letter-spacing: 1.5px;
-            font-weight: 700;
-        }
-
-        .soil-subtitle {
-            font-size: 0.55rem;
-            color: var(--text-muted);
-            margin-top: 2px;
-        }
-
-        .soil-pct {
+        .soil-big {
             font-family: 'Orbitron', monospace;
-            font-size: 1.4rem;
-            font-weight: 700;
+            font-size: 1.6rem; font-weight: 900;
             color: var(--text);
-            text-shadow: 0 0 10px var(--green-glow);
+            text-shadow: 0 0 14px var(--glow);
+            line-height: 1; margin-bottom: 12px;
+        }
+        .soil-big span { font-size: 0.7rem; color: var(--muted); font-family: 'Rajdhani', sans-serif; }
+
+        /* Thermometer */
+        .thermo-row { display: flex; gap: 10px; align-items: flex-end; }
+        .thermo-tube {
+            width: 20px; height: 80px;
+            background: rgba(0,0,0,0.5);
+            border: 1.5px solid var(--border2);
+            border-radius: 10px;
+            position: relative; overflow: hidden; flex-shrink: 0;
+        }
+        .thermo-fill {
+            position: absolute; bottom:0; left:0; width:100%;
+            border-radius: 0 0 8px 8px;
+            background: linear-gradient(to top, var(--green-dim), var(--green), rgba(105,240,174,0.5));
+            box-shadow: 0 -6px 20px var(--glow), 0 -2px 8px rgba(0,230,118,0.6);
+            transition: height 1.5s cubic-bezier(.4,0,.2,1);
+        }
+        .thermo-ticks {
+            display: flex; flex-direction: column; justify-content: space-between;
+            height: 80px; padding: 2px 0;
+        }
+        .thermo-tick {
+            font-size: 0.42rem; color: var(--muted);
+            display: flex; align-items: center; gap: 3px;
+        }
+        .thermo-tick::before { content:'—'; font-size:0.5rem; }
+
+        /* ── SPARKLINES ──────────────────────────────────────── */
+        .spark-card {
+            margin: 0 14px 10px;
+            background: var(--card);
+            border: 1px solid var(--border);
+            border-radius: 16px;
+            padding: 12px 14px 10px;
+            box-shadow: inset 0 1px 0 rgba(0,230,118,0.08);
+        }
+        .spark-head {
+            display: flex; justify-content: space-between; align-items: center;
             margin-bottom: 10px;
         }
+        .spark-head-label { font-size: 0.58rem; letter-spacing: 2px; text-transform: uppercase; color: var(--muted); }
+        .spark-head-time  { font-size: 0.52rem; color: var(--muted); }
+        .spark-row { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+        .spark-item { }
+        .spark-item svg { width: 100%; height: 44px; }
+        .spark-lbl { font-size: 0.52rem; color: var(--muted); text-align: center; margin-top: 3px; }
 
-        .soil-pct span { font-size: 0.75rem; color: var(--text-muted); }
-
-        .thermometer-wrap {
-            display: flex;
-            gap: 10px;
-            align-items: flex-end;
-            height: 100px;
-        }
-
-        .thermo {
-            width: 22px;
-            height: 90px;
-            border: 1.5px solid var(--border-bright);
-            border-radius: 12px;
-            background: rgba(0,0,0,0.4);
-            position: relative;
-            overflow: hidden;
-            flex-shrink: 0;
-        }
-
-        .thermo-fill {
-            position: absolute;
-            bottom: 0;
-            left: 0;
-            width: 100%;
-            border-radius: 0 0 10px 10px;
-            background: linear-gradient(to top, var(--green), rgba(0,230,118,0.4));
-            box-shadow: 0 -4px 12px var(--green-glow);
-            transition: height 1.5s ease;
-        }
-
-        .thermo-tick-wrap {
-            display: flex;
-            flex-direction: column;
-            justify-content: space-between;
-            height: 90px;
-            padding: 4px 0;
-        }
-
-        .thermo-tick {
-            display: flex;
-            align-items: center;
-            gap: 4px;
-            font-size: 0.45rem;
-            color: var(--text-muted);
-        }
-
-        .thermo-tick::before {
-            content: '—';
-            color: var(--border-bright);
-            font-size: 0.5rem;
-        }
-
-        /* Mini Sparkline */
-        .mini-spark {
-            background: var(--card);
-            border: 1px solid var(--border);
-            border-radius: 12px;
-            padding: 10px 12px 8px;
-            margin: 0 14px 10px;
-        }
-
-        .mini-spark-header {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            margin-bottom: 6px;
-        }
-
-        .mini-spark-label {
-            font-size: 0.6rem;
-            color: var(--text-muted);
-            text-transform: uppercase;
-            letter-spacing: 2px;
-        }
-
-        .mini-spark-time {
-            font-size: 0.55rem;
-            color: var(--text-muted);
-        }
-
-        .sparks-grid {
-            display: grid;
-            grid-template-columns: 1fr 1fr;
-            gap: 8px;
-        }
-
-        .spark-item { position: relative; }
-
-        .spark-item svg { width: 100%; height: 40px; }
-
-        .spark-dot {
-            font-size: 0.55rem;
-            color: var(--text-muted);
-            margin-top: 2px;
-            text-align: center;
-        }
-
-        /* ─── CONTROLS ROW ───────────────────────── */
-        .controls-row {
-            display: flex;
-            align-items: center;
-            justify-content: space-around;
-            padding: 12px 18px;
-            border-top: 1px solid var(--border);
-            border-bottom: 1px solid var(--border);
+        /* ── CONTROLS ────────────────────────────────────────── */
+        .ctrl-row {
             margin: 0 14px 14px;
             background: var(--card);
-            border-radius: 14px;
-        }
-
-        .control-item {
-            display: flex;
-            align-items: center;
-            gap: 10px;
-        }
-
-        .control-label {
-            font-size: 0.65rem;
-            font-weight: 700;
-            color: var(--text-muted);
-            text-transform: uppercase;
-            letter-spacing: 1px;
-        }
-
-        .toggle {
-            width: 44px;
-            height: 24px;
-            background: var(--green);
-            border-radius: 12px;
-            position: relative;
-            box-shadow: 0 0 12px var(--green-glow);
-            cursor: pointer;
-            transition: background 0.3s;
-        }
-
-        .toggle::after {
-            content: '';
-            position: absolute;
-            top: 3px; left: 3px;
-            width: 18px; height: 18px;
-            background: #fff;
-            border-radius: 50%;
-            box-shadow: 0 1px 4px rgba(0,0,0,0.3);
-            transition: left 0.3s;
-        }
-
-        .toggle.on::after { left: 23px; }
-
-        .toggle-label {
-            font-size: 0.6rem;
-            color: var(--green);
-            font-weight: 700;
-            text-shadow: 0 0 6px var(--green-glow);
-        }
-
-        /* ─── BOTTOM NAV ─────────────────────────── */
-        .bottom-nav {
-            display: flex;
-            justify-content: space-around;
-            align-items: center;
-            padding: 14px 20px;
-            background: var(--card2);
-            border-top: 1px solid var(--border);
-            margin: 0 14px;
-            border-radius: 0 0 20px 20px;
             border: 1px solid var(--border);
+            border-radius: 16px;
+            padding: 12px 18px;
+            display: flex; align-items: center; justify-content: space-around;
+            box-shadow: inset 0 1px 0 rgba(0,230,118,0.08);
         }
+        .ctrl-sep { width:1px; height:28px; background: var(--border); }
+        .ctrl-item { display: flex; align-items: center; gap: 10px; }
+        .ctrl-lbl { font-size: 0.62rem; letter-spacing: 1.5px; text-transform: uppercase; color: var(--muted); font-weight: 700; }
+        .toggle {
+            width: 42px; height: 22px; border-radius: 11px; cursor: pointer;
+            position: relative; transition: background 0.3s, box-shadow 0.3s;
+            background: var(--green);
+            box-shadow: 0 0 12px var(--glow-sm);
+        }
+        .toggle::after {
+            content:''; position:absolute; top:3px; left:3px;
+            width:16px; height:16px; border-radius:50%;
+            background: #fff;
+            box-shadow: 0 1px 4px rgba(0,0,0,0.4);
+            transition: left 0.3s cubic-bezier(.4,0,.2,1);
+        }
+        .toggle.on::after { left: 23px; }
+        .toggle.off { background: #2a3a2a; box-shadow: none; }
+        .ctrl-val { font-size: 0.62rem; color: var(--green); font-weight: 700; text-shadow: 0 0 6px var(--glow-sm); }
+        .ctrl-val.off { color: var(--muted); text-shadow: none; }
 
+        /* ── BOTTOM NAV ──────────────────────────────────────── */
+        .nav {
+            margin: 0 14px;
+            background: var(--card-hi);
+            border: 1px solid var(--border);
+            border-radius: 20px;
+            padding: 14px 20px;
+            display: flex; justify-content: space-around; align-items: center;
+            box-shadow: inset 0 1px 0 rgba(0,230,118,0.07), 0 4px 20px rgba(0,0,0,0.4);
+        }
         .nav-btn {
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            gap: 4px;
-            color: var(--text-muted);
-            cursor: pointer;
-            transition: color 0.2s;
+            position: relative; display: flex; flex-direction: column;
+            align-items: center; gap: 4px;
+            color: var(--muted); cursor: pointer; transition: color 0.2s;
         }
-
-        .nav-btn.active {
-            color: var(--green);
-            filter: drop-shadow(0 0 4px var(--green-glow));
-        }
-
         .nav-btn svg { width: 22px; height: 22px; }
-
-        .nav-indicator {
-            position: relative;
-        }
-
-        .nav-indicator::after {
-            content: '';
-            position: absolute;
-            bottom: -6px;
-            left: 50%;
+        .nav-btn.active { color: var(--green); filter: drop-shadow(0 0 5px var(--glow)); }
+        .nav-btn.active::after {
+            content:''; position:absolute; bottom:-8px; left:50%;
             transform: translateX(-50%);
-            width: 20px;
-            height: 2px;
+            width: 18px; height: 2px;
             background: var(--green);
             border-radius: 1px;
             box-shadow: 0 0 6px var(--green);
         }
-
-        /* Tick marks on gauge */
-        .tick { stroke: var(--border-bright); stroke-width: 1; }
-        .tick-major { stroke: rgba(0,230,118,0.4); stroke-width: 1.5; }
     </style>
 </head>
-
 <body>
-    <div class="app">
+<div class="app">
 
-        <!-- HEADER -->
-        <div class="header">
-            <div class="header-title">
-                <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                    <path d="M12 2a10 10 0 0 1 10 10c0 5-4 9-10 12C6 21 2 17 2 12A10 10 0 0 1 12 2z"/>
-                    <path d="M12 6v6M12 12l4 2"/>
-                </svg>
-                <h1>Smart Grow</h1>
-            </div>
-            <div class="header-avatar">
-                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                    <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/>
-                    <circle cx="12" cy="7" r="4"/>
+    <!-- HEADER -->
+    <header>
+        <div class="logo">
+            <div class="logo-icon">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round">
+                    <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/>
+                    <path d="M9 12l2 2 4-4"/>
                 </svg>
             </div>
+            <h1>Smart Grow</h1>
         </div>
-
-        <div class="status-bar">
-            <div class="status-dot"></div>
-            <span id="status-text">Online · Monitorando</span>
-        </div>
-
-        <!-- GAUGES DE TEMPERATURA E UMIDADE -->
-        <div class="gauges-row">
-            <!-- TEMPERATURE GAUGE -->
-            <div class="gauge-card">
-                <div class="gauge-label">Temperatura</div>
-                <div class="gauge-wrap">
-                    <svg class="gauge-svg" viewBox="0 0 130 130">
-                        <defs>
-                            <linearGradient id="gGreen" x1="0" y1="1" x2="1" y2="0">
-                                <stop offset="0%" stop-color="#00c853"/>
-                                <stop offset="100%" stop-color="#00e676"/>
-                            </linearGradient>
-                        </defs>
-                        <!-- Track -->
-                        <circle cx="65" cy="65" r="50" fill="none" stroke="rgba(0,230,118,0.08)" stroke-width="10" stroke-dasharray="251.2 314.16" stroke-dashoffset="-31.4" transform="rotate(135 65 65)"/>
-                        <!-- Progress -->
-                        <circle id="gauge-temp-arc" cx="65" cy="65" r="50" fill="none" stroke="url(#gGreen)" stroke-width="10" stroke-linecap="round" stroke-dasharray="0 314.16" stroke-dashoffset="-31.4" transform="rotate(135 65 65)" style="filter: drop-shadow(0 0 6px rgba(0,230,118,0.5)); transition: stroke-dasharray 1.5s ease;"/>
-                        <!-- Tick marks -->
-                        <g id="temp-ticks"></g>
-                        <!-- Needle base -->
-                        <circle cx="65" cy="65" r="6" fill="var(--card)" stroke="var(--green)" stroke-width="1.5"/>
-                        <!-- Needle -->
-                        <line id="needle-temp" x1="65" y1="65" x2="65" y2="22" stroke="var(--green)" stroke-width="2" stroke-linecap="round" transform="rotate(-135 65 65)" style="filter: drop-shadow(0 0 3px var(--green)); transition: transform 1.5s ease;"/>
-                    </svg>
-                    <div class="gauge-center">
-                        <div class="gauge-val" id="val-temp">--</div>
-                        <div class="gauge-unit">°C</div>
-                    </div>
-                </div>
-                <div class="gauge-hint">Ideal 22-26 °C</div>
-            </div>
-
-            <!-- HUMIDITY GAUGE -->
-            <div class="gauge-card">
-                <div class="gauge-label">Umidade do Ar</div>
-                <div class="gauge-wrap">
-                    <svg class="gauge-svg" viewBox="0 0 130 130">
-                        <!-- Track -->
-                        <circle cx="65" cy="65" r="50" fill="none" stroke="rgba(0,230,118,0.08)" stroke-width="10" stroke-dasharray="251.2 314.16" stroke-dashoffset="-31.4" transform="rotate(135 65 65)"/>
-                        <!-- Progress -->
-                        <circle id="gauge-umid-arc" cx="65" cy="65" r="50" fill="none" stroke="url(#gGreen)" stroke-width="10" stroke-linecap="round" stroke-dasharray="0 314.16" stroke-dashoffset="-31.4" transform="rotate(135 65 65)" style="filter: drop-shadow(0 0 6px rgba(0,230,118,0.5)); transition: stroke-dasharray 1.5s ease;"/>
-                        <!-- Needle base -->
-                        <circle cx="65" cy="65" r="6" fill="var(--card)" stroke="var(--green)" stroke-width="1.5"/>
-                        <!-- Needle -->
-                        <line id="needle-umid" x1="65" y1="65" x2="65" y2="22" stroke="var(--green)" stroke-width="2" stroke-linecap="round" transform="rotate(-135 65 65)" style="filter: drop-shadow(0 0 3px var(--green)); transition: transform 1.5s ease;"/>
-                    </svg>
-                    <div class="gauge-center">
-                        <div class="gauge-val" id="val-umid">--</div>
-                        <div class="gauge-unit">%</div>
-                    </div>
-                </div>
-                <div class="gauge-hint">Ideal 60-70 %</div>
+        <div class="header-right">
+            <div class="pill">
+                <div class="pill-dot"></div>
+                <span id="status-text">Online</span>
             </div>
         </div>
+    </header>
 
-        <!-- SOIL MOISTURE CARDS -->
-        <div class="soil-row">
-            <!-- POT 1 -->
-            <div class="soil-card">
-                <div class="soil-header">
-                    <div class="soil-title">Umidade Solo · Vaso 1</div>
-                    <div class="soil-subtitle">Sensor Capacitivo</div>
-                </div>
-                <div class="soil-pct" id="val-soil1">-- <span>%</span></div>
-                <div class="thermometer-wrap">
-                    <div class="thermo">
-                        <div class="thermo-fill" id="thermo-soil1" style="height: 0%;"></div>
-                    </div>
-                    <div class="thermo-tick-wrap">
-                        <div class="thermo-tick">100%</div>
-                        <div class="thermo-tick">75%</div>
-                        <div class="thermo-tick">50%</div>
-                        <div class="thermo-tick">25%</div>
-                        <div class="thermo-tick">0%</div>
-                    </div>
-                </div>
-            </div>
+    <!-- GAUGES -->
+    <div class="sec-label">Ambiente</div>
+    <div class="gauge-grid">
 
-            <!-- POT 2 -->
-            <div class="soil-card">
-                <div class="soil-header">
-                    <div class="soil-title">Umidade Solo · Vaso 2</div>
-                    <div class="soil-subtitle">Sensor Capacitivo</div>
-                </div>
-                <div class="soil-pct" id="val-soil2">-- <span>%</span></div>
-                <div class="thermometer-wrap">
-                    <div class="thermo">
-                        <div class="thermo-fill" id="thermo-soil2" style="height: 0%;"></div>
-                    </div>
-                    <div class="thermo-tick-wrap">
-                        <div class="thermo-tick">100%</div>
-                        <div class="thermo-tick">75%</div>
-                        <div class="thermo-tick">50%</div>
-                        <div class="thermo-tick">25%</div>
-                        <div class="thermo-tick">0%</div>
-                    </div>
-                </div>
-            </div>
-        </div>
+        <!-- TEMPERATURA -->
+        <div class="gauge-card">
+            <div class="glass"></div>
+            <div class="gauge-tag">Temperatura</div>
+            <div class="gauge-svg-wrap">
+                <svg class="gauge-svg" viewBox="0 0 160 160">
+                    <defs>
+                        <!-- Gradiente do arco ativo -->
+                        <linearGradient id="arcGrad" x1="0%" y1="0%" x2="100%" y2="0%">
+                            <stop offset="0%"   stop-color="#00c853"/>
+                            <stop offset="60%"  stop-color="#00e676"/>
+                            <stop offset="100%" stop-color="#69f0ae"/>
+                        </linearGradient>
+                        <!-- Filtro glow -->
+                        <filter id="glow" x="-30%" y="-30%" width="160%" height="160%">
+                            <feGaussianBlur stdDeviation="3" result="blur"/>
+                            <feMerge><feMergeNode in="blur"/><feMergeNode in="SourceGraphic"/></feMerge>
+                        </filter>
+                        <filter id="glow-sm" x="-20%" y="-20%" width="140%" height="140%">
+                            <feGaussianBlur stdDeviation="1.5" result="blur"/>
+                            <feMerge><feMergeNode in="blur"/><feMergeNode in="SourceGraphic"/></feMerge>
+                        </filter>
+                    </defs>
 
-        <!-- MINI SPARKLINES (histórico simulado 24h) -->
-        <div class="mini-spark">
-            <div class="mini-spark-header">
-                <span class="mini-spark-label">Histórico · Solo</span>
-                <span class="mini-spark-time">últimas 24h</span>
-            </div>
-            <div class="sparks-grid">
-                <div class="spark-item">
-                    <svg viewBox="0 0 100 40" preserveAspectRatio="none">
-                        <defs>
-                            <linearGradient id="sg1" x1="0" y1="0" x2="0" y2="1">
-                                <stop offset="0%" stop-color="#00e676" stop-opacity="0.4"/>
-                                <stop offset="100%" stop-color="#00e676" stop-opacity="0"/>
-                            </linearGradient>
-                        </defs>
-                        <path id="spark-s1-fill" fill="url(#sg1)" d=""/>
-                        <path id="spark-s1" fill="none" stroke="#00e676" stroke-width="1.5" d=""/>
-                    </svg>
-                    <div class="spark-dot">Vaso 1</div>
-                </div>
-                <div class="spark-item">
-                    <svg viewBox="0 0 100 40" preserveAspectRatio="none">
-                        <defs>
-                            <linearGradient id="sg2" x1="0" y1="0" x2="0" y2="1">
-                                <stop offset="0%" stop-color="#00e676" stop-opacity="0.4"/>
-                                <stop offset="100%" stop-color="#00e676" stop-opacity="0"/>
-                            </linearGradient>
-                        </defs>
-                        <path id="spark-s2-fill" fill="url(#sg2)" d=""/>
-                        <path id="spark-s2" fill="none" stroke="#00e676" stroke-width="1.5" d=""/>
-                    </svg>
-                    <div class="spark-dot">Vaso 2</div>
-                </div>
-            </div>
-        </div>
+                    <!-- Fundo do arco (track) — 270° -->
+                    <circle cx="80" cy="80" r="62"
+                        fill="none"
+                        stroke="rgba(0,230,118,0.07)"
+                        stroke-width="12"
+                        stroke-dasharray="294.5 390.0"
+                        stroke-dashoffset="-48.5"
+                        stroke-linecap="round"
+                        transform="rotate(0 80 80)"/>
 
-        <!-- CONTROLES -->
-        <div class="controls-row">
-            <div class="control-item">
-                <div class="control-label">Luz LED</div>
-                <div class="toggle on" id="toggle-led" onclick="toggleCtrl(this)"></div>
-                <div class="toggle-label" id="lbl-led">ON</div>
-            </div>
-            <div style="width:1px; height:30px; background: var(--border);"></div>
-            <div class="control-item">
-                <div class="control-label">Bomba</div>
-                <div class="toggle on" id="toggle-pump" onclick="toggleCtrl(this)"></div>
-                <div class="toggle-label" id="lbl-pump">AUTO</div>
-            </div>
-        </div>
+                    <!-- Arco ativo -->
+                    <circle id="arc-temp" cx="80" cy="80" r="62"
+                        fill="none"
+                        stroke="url(#arcGrad)"
+                        stroke-width="12"
+                        stroke-dasharray="0 390.0"
+                        stroke-dashoffset="-48.5"
+                        stroke-linecap="round"
+                        transform="rotate(0 80 80)"
+                        filter="url(#glow)"
+                        style="transition: stroke-dasharray 1.4s cubic-bezier(.4,0,.2,1);"/>
 
-        <!-- BOTTOM NAV -->
-        <div class="bottom-nav">
-            <div class="nav-btn active nav-indicator">
-                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round">
-                    <path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/>
-                    <polyline points="9 22 9 12 15 12 15 22"/>
+                    <!-- Marcações de escala -->
+                    <g id="ticks-temp"></g>
+
+                    <!-- Anel interno decorativo -->
+                    <circle cx="80" cy="80" r="48" fill="none" stroke="rgba(0,230,118,0.05)" stroke-width="1"/>
+                    <circle cx="80" cy="80" r="38" fill="rgba(0,0,0,0.35)" stroke="rgba(0,230,118,0.06)" stroke-width="1"/>
+
+                    <!-- Ponteiro -->
+                    <line id="needle-temp"
+                        x1="80" y1="80" x2="80" y2="28"
+                        stroke="var(--green)" stroke-width="2.5" stroke-linecap="round"
+                        filter="url(#glow)"
+                        transform="rotate(-135 80 80)"
+                        style="transition: transform 1.4s cubic-bezier(.4,0,.2,1);"/>
+
+                    <!-- Centro do ponteiro -->
+                    <circle cx="80" cy="80" r="5.5" fill="#0a0f0a" stroke="var(--green)" stroke-width="2" filter="url(#glow-sm)"/>
+                    <circle cx="80" cy="80" r="2" fill="var(--green)" filter="url(#glow)"/>
                 </svg>
+                <div class="gauge-center">
+                    <div class="gauge-num" id="val-temp">--</div>
+                    <div class="gauge-unit">°C</div>
+                </div>
             </div>
-            <div class="nav-btn">
-                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round">
-                    <path d="M12 2a7 7 0 0 1 7 7c0 4-3 6-7 13C8 15 5 13 5 9a7 7 0 0 1 7-7z"/>
-                    <circle cx="12" cy="9" r="2.5"/>
-                </svg>
-            </div>
-            <div class="nav-btn">
-                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round">
-                    <path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/>
-                    <path d="M13.73 21a2 2 0 0 1-3.46 0"/>
-                </svg>
-            </div>
-            <div class="nav-btn">
-                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round">
-                    <circle cx="12" cy="12" r="3"/>
-                    <path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/>
-                </svg>
-            </div>
+            <div class="gauge-hint">Ideal: 22 – 26 °C</div>
         </div>
 
+        <!-- UMIDADE DO AR -->
+        <div class="gauge-card">
+            <div class="glass"></div>
+            <div class="gauge-tag">Umidade do Ar</div>
+            <div class="gauge-svg-wrap">
+                <svg class="gauge-svg" viewBox="0 0 160 160">
+                    <!-- Track -->
+                    <circle cx="80" cy="80" r="62"
+                        fill="none" stroke="rgba(0,230,118,0.07)" stroke-width="12"
+                        stroke-dasharray="294.5 390.0" stroke-dashoffset="-48.5"
+                        stroke-linecap="round"/>
+                    <!-- Arco ativo -->
+                    <circle id="arc-umid" cx="80" cy="80" r="62"
+                        fill="none" stroke="url(#arcGrad)" stroke-width="12"
+                        stroke-dasharray="0 390.0" stroke-dashoffset="-48.5"
+                        stroke-linecap="round" filter="url(#glow)"
+                        style="transition: stroke-dasharray 1.4s cubic-bezier(.4,0,.2,1);"/>
+                    <!-- Marcações -->
+                    <g id="ticks-umid"></g>
+                    <!-- Rings internos -->
+                    <circle cx="80" cy="80" r="48" fill="none" stroke="rgba(0,230,118,0.05)" stroke-width="1"/>
+                    <circle cx="80" cy="80" r="38" fill="rgba(0,0,0,0.35)" stroke="rgba(0,230,118,0.06)" stroke-width="1"/>
+                    <!-- Ponteiro -->
+                    <line id="needle-umid"
+                        x1="80" y1="80" x2="80" y2="28"
+                        stroke="var(--green)" stroke-width="2.5" stroke-linecap="round"
+                        filter="url(#glow)"
+                        transform="rotate(-135 80 80)"
+                        style="transition: transform 1.4s cubic-bezier(.4,0,.2,1);"/>
+                    <!-- Centro -->
+                    <circle cx="80" cy="80" r="5.5" fill="#0a0f0a" stroke="var(--green)" stroke-width="2" filter="url(#glow-sm)"/>
+                    <circle cx="80" cy="80" r="2" fill="var(--green)" filter="url(#glow)"/>
+                </svg>
+                <div class="gauge-center">
+                    <div class="gauge-num" id="val-umid">--</div>
+                    <div class="gauge-unit">%</div>
+                </div>
+            </div>
+            <div class="gauge-hint">Ideal: 60 – 70 %</div>
+        </div>
     </div>
 
-    <script>
-        // ─── GAUGE ARC ─────────────────────────────────────────────────
-        // Arco visível = 270° → circunferência total C = 2π*50 = 314.16
-        // Arco track = 251.2 (270/360*314.16)
-        const C = 314.16;
-        const ARC = 251.2; // 270° visíveis
+    <!-- SOLO -->
+    <div class="sec-label">Umidade do Solo</div>
+    <div class="soil-grid">
+        <!-- VASO 1 -->
+        <div class="soil-card">
+            <div class="soil-name">Vaso 1</div>
+            <div class="soil-sub">Sensor Capacitivo</div>
+            <div class="soil-big" id="val-soil1">-- <span>%</span></div>
+            <div class="thermo-row">
+                <div class="thermo-tube">
+                    <div class="thermo-fill" id="thermo-s1" style="height:0%"></div>
+                </div>
+                <div class="thermo-ticks">
+                    <div class="thermo-tick">100%</div>
+                    <div class="thermo-tick">75%</div>
+                    <div class="thermo-tick">50%</div>
+                    <div class="thermo-tick">25%</div>
+                    <div class="thermo-tick">0%</div>
+                </div>
+            </div>
+        </div>
+        <!-- VASO 2 -->
+        <div class="soil-card">
+            <div class="soil-name">Vaso 2</div>
+            <div class="soil-sub">Sensor Capacitivo</div>
+            <div class="soil-big" id="val-soil2">-- <span>%</span></div>
+            <div class="thermo-row">
+                <div class="thermo-tube">
+                    <div class="thermo-fill" id="thermo-s2" style="height:0%"></div>
+                </div>
+                <div class="thermo-ticks">
+                    <div class="thermo-tick">100%</div>
+                    <div class="thermo-tick">75%</div>
+                    <div class="thermo-tick">50%</div>
+                    <div class="thermo-tick">25%</div>
+                    <div class="thermo-tick">0%</div>
+                </div>
+            </div>
+        </div>
+    </div>
 
-        function setGaugeArc(arcEl, pct) {
-            const filled = ARC * Math.min(Math.max(pct, 0), 1);
-            arcEl.setAttribute('stroke-dasharray', `${filled} ${C}`);
-        }
+    <!-- SPARKLINES -->
+    <div class="spark-card">
+        <div class="spark-head">
+            <span class="spark-head-label">Histórico · Solo</span>
+            <span class="spark-head-time">últimas 24 h</span>
+        </div>
+        <div class="spark-row">
+            <div class="spark-item">
+                <svg viewBox="0 0 100 44" preserveAspectRatio="none">
+                    <defs>
+                        <linearGradient id="sg1" x1="0" y1="0" x2="0" y2="1">
+                            <stop offset="0%" stop-color="#00e676" stop-opacity="0.35"/>
+                            <stop offset="100%" stop-color="#00e676" stop-opacity="0"/>
+                        </linearGradient>
+                    </defs>
+                    <path id="sp1f" fill="url(#sg1)" d=""/>
+                    <path id="sp1" fill="none" stroke="#00e676" stroke-width="1.8" stroke-linejoin="round" d=""/>
+                </svg>
+                <div class="spark-lbl">Vaso 1</div>
+            </div>
+            <div class="spark-item">
+                <svg viewBox="0 0 100 44" preserveAspectRatio="none">
+                    <defs>
+                        <linearGradient id="sg2" x1="0" y1="0" x2="0" y2="1">
+                            <stop offset="0%" stop-color="#00e676" stop-opacity="0.35"/>
+                            <stop offset="100%" stop-color="#00e676" stop-opacity="0"/>
+                        </linearGradient>
+                    </defs>
+                    <path id="sp2f" fill="url(#sg2)" d=""/>
+                    <path id="sp2" fill="none" stroke="#00e676" stroke-width="1.8" stroke-linejoin="round" d=""/>
+                </svg>
+                <div class="spark-lbl">Vaso 2</div>
+            </div>
+        </div>
+    </div>
 
-        function setNeedle(needleEl, pct) {
-            // -135° = 0%  →  +135° = 100%   → span 270°
-            const deg = -135 + pct * 270;
-            needleEl.setAttribute('transform', `rotate(${deg} 65 65)`);
-        }
+    <!-- CONTROLES -->
+    <div class="ctrl-row">
+        <div class="ctrl-item">
+            <div class="ctrl-lbl">Luz LED</div>
+            <div class="toggle on" id="t-led" onclick="tog(this,'lbl-led','ON','OFF')"></div>
+            <div class="ctrl-val" id="lbl-led">ON</div>
+        </div>
+        <div class="ctrl-sep"></div>
+        <div class="ctrl-item">
+            <div class="ctrl-lbl">Bomba</div>
+            <div class="toggle on" id="t-pump" onclick="tog(this,'lbl-pump','AUTO','OFF')"></div>
+            <div class="ctrl-val" id="lbl-pump">AUTO</div>
+        </div>
+    </div>
 
-        // ─── THERMOMETERS ──────────────────────────────────────────────
-        function setThermo(id, pct) {
-            const el = document.getElementById(id);
-            if (el) el.style.height = Math.min(Math.max(pct * 100, 0), 100) + '%';
-        }
+    <!-- NAV -->
+    <div class="nav">
+        <div class="nav-btn active">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round">
+                <path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/>
+                <polyline points="9 22 9 12 15 12 15 22"/>
+            </svg>
+        </div>
+        <div class="nav-btn">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round">
+                <path d="M12 2a7 7 0 0 1 7 7c0 4-3 6-7 13C8 15 5 13 5 9a7 7 0 0 1 7-7z"/>
+                <circle cx="12" cy="9" r="2.5"/>
+            </svg>
+        </div>
+        <div class="nav-btn">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round">
+                <path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/>
+                <path d="M13.73 21a2 2 0 0 1-3.46 0"/>
+            </svg>
+        </div>
+        <div class="nav-btn">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round">
+                <circle cx="12" cy="12" r="3"/>
+                <path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/>
+            </svg>
+        </div>
+    </div>
 
-        // ─── SPARKLINES (histórico simulado) ──────────────────────────
-        const history = { s1: [], s2: [] };
-        const MAX_HIST = 20;
+</div>
+<script>
+// ── Constantes do gauge ─────────────────────────────────────────
+// Circunferência completa r=62: 2π×62 = 389.56 ≈ 390
+// Arco 270° (3/4): 390 × 0.75 = 292.5
+// Offset inicial: deixar "vazio" no fundo — rotacionar -135° via transform (início esquerda-baixo)
+const C = 389.56;
+const ARC = 292.2; // 270°
 
-        function buildPath(points) {
-            if (!points.length) return '';
-            const xStep = 100 / (MAX_HIST - 1);
-            const pts = points.map((v, i) => {
-                const x = i * xStep;
-                const y = 40 - (v / 100) * 35;
-                return `${x.toFixed(1)},${y.toFixed(1)}`;
-            });
-            const line = 'M' + pts.join(' L');
-            const fill = line + ` L${100},40 L0,40 Z`;
-            return { line, fill };
-        }
+// ── Gera marcações de escala ────────────────────────────────────
+function buildTicks(svgId, count, cx, cy, r1, r2, rLabel) {
+    const g = document.getElementById(svgId);
+    if (!g) return;
+    const startAngle = -225; // graus (135° abaixo da horizontal esquerda)
+    const sweep = 270;
+    for (let i = 0; i <= count; i++) {
+        const angle = startAngle + (sweep / count) * i;
+        const rad = angle * Math.PI / 180;
+        const major = i % 5 === 0;
+        const x1 = cx + r1 * Math.cos(rad);
+        const y1 = cy + r1 * Math.sin(rad);
+        const x2 = cx + r2 * Math.cos(rad);
+        const y2 = cy + r2 * Math.sin(rad);
+        const line = document.createElementNS('http://www.w3.org/2000/svg','line');
+        line.setAttribute('x1', x1); line.setAttribute('y1', y1);
+        line.setAttribute('x2', x2); line.setAttribute('y2', y2);
+        line.setAttribute('stroke', major ? 'rgba(0,230,118,0.5)' : 'rgba(0,230,118,0.18)');
+        line.setAttribute('stroke-width', major ? '2' : '1');
+        line.setAttribute('stroke-linecap', 'round');
+        g.appendChild(line);
+    }
+}
+buildTicks('ticks-temp', 25, 80, 80, 68, major => major ? 74 : 71, 78);
+buildTicks('ticks-umid', 25, 80, 80, 68, major => major ? 74 : 71, 78);
+// Versão simplificada — passando os raios diretamente
+function buildTicksFixed(svgId, count, cx, cy, rOuter, rInner) {
+    const g = document.getElementById(svgId);
+    if (!g) return;
+    const startAngle = -225;
+    const sweep = 270;
+    for (let i = 0; i <= count; i++) {
+        const angle = startAngle + (sweep / count) * i;
+        const rad = angle * Math.PI / 180;
+        const major = i % 5 === 0;
+        const r1 = major ? rOuter : rOuter - 3;
+        const r2 = rInner;
+        const line = document.createElementNS('http://www.w3.org/2000/svg','line');
+        line.setAttribute('x1', cx + r1*Math.cos(rad));
+        line.setAttribute('y1', cy + r1*Math.sin(rad));
+        line.setAttribute('x2', cx + r2*Math.cos(rad));
+        line.setAttribute('y2', cy + r2*Math.sin(rad));
+        line.setAttribute('stroke', major ? 'rgba(0,230,118,0.55)' : 'rgba(0,230,118,0.2)');
+        line.setAttribute('stroke-width', major ? '2' : '1');
+        line.setAttribute('stroke-linecap', 'round');
+        g.appendChild(line);
+    }
+}
+// Limpa e recria com versão correta
+document.getElementById('ticks-temp').innerHTML = '';
+document.getElementById('ticks-umid').innerHTML = '';
+buildTicksFixed('ticks-temp', 25, 80, 80, 74, 68);
+buildTicksFixed('ticks-umid', 25, 80, 80, 74, 68);
 
-        function updateSparks() {
-            ['s1', 's2'].forEach(k => {
-                const { line, fill } = buildPath(history[k]);
-                const lEl = document.getElementById(`spark-${k}`);
-                const fEl = document.getElementById(`spark-${k}-fill`);
-                if (lEl) lEl.setAttribute('d', line);
-                if (fEl) fEl.setAttribute('d', fill);
-            });
-        }
+// ── Gauge arc e needle ─────────────────────────────────────────
+function setArc(el, pct) {
+    const f = Math.min(Math.max(pct, 0), 1);
+    el.setAttribute('stroke-dasharray', `${ARC * f} ${C}`);
+}
+function setNeedle(el, pct) {
+    const deg = -135 + pct * 270;
+    el.setAttribute('transform', `rotate(${deg} 80 80)`);
+}
 
-        // ─── APPLY VALUES ──────────────────────────────────────────────
-        function setValues(t, u, s1, s2) {
-            t = parseFloat(t) || 0;
-            u = parseFloat(u) || 0;
-            s1 = parseInt(s1) || 0;
-            s2 = parseInt(s2) || 0;
+// ── Histórico sparklines ────────────────────────────────────────
+const MAX = 20;
+const hist = { s1: [], s2: [] };
+for (let i = 0; i < MAX-1; i++) {
+    hist.s1.push(Math.round(65 + Math.random()*16 - 8));
+    hist.s2.push(Math.round(35 + Math.random()*12 - 6));
+}
 
-            // Textos
-            document.getElementById('val-temp').innerText = t.toFixed(1);
-            document.getElementById('val-umid').innerText = u.toFixed(1);
-            document.getElementById('val-soil1').innerHTML = s1 + ' <span>%</span>';
-            document.getElementById('val-soil2').innerHTML = s2 + ' <span>%</span>';
+function makePath(arr) {
+    if (arr.length < 2) return { l: '', f: '' };
+    const step = 100 / (MAX - 1);
+    const pts = arr.map((v, i) => `${(i * step).toFixed(1)},${(44 - (v/100)*38).toFixed(1)}`);
+    const l = 'M' + pts.join(' L');
+    const f = l + ` L100,44 L0,44 Z`;
+    return { l, f };
+}
+function updateSparks() {
+    const p1 = makePath(hist.s1); const p2 = makePath(hist.s2);
+    document.getElementById('sp1').setAttribute('d', p1.l);
+    document.getElementById('sp1f').setAttribute('d', p1.f);
+    document.getElementById('sp2').setAttribute('d', p2.l);
+    document.getElementById('sp2f').setAttribute('d', p2.f);
+}
+updateSparks();
 
-            // Gauges: temp 0-50°C, umid 0-100%
-            const tPct = t / 50;
-            const uPct = u / 100;
-            setGaugeArc(document.getElementById('gauge-temp-arc'), tPct);
-            setGaugeArc(document.getElementById('gauge-umid-arc'), uPct);
-            setNeedle(document.getElementById('needle-temp'), tPct);
-            setNeedle(document.getElementById('needle-umid'), uPct);
+// ── Aplicar valores ─────────────────────────────────────────────
+function setValues(t, u, s1, s2) {
+    t = parseFloat(t)||0; u = parseFloat(u)||0;
+    s1 = parseInt(s1)||0; s2 = parseInt(s2)||0;
 
-            // Thermometers
-            setThermo('thermo-soil1', s1 / 100);
-            setThermo('thermo-soil2', s2 / 100);
+    document.getElementById('val-temp').textContent = t.toFixed(1);
+    document.getElementById('val-umid').textContent = u.toFixed(1);
+    document.getElementById('val-soil1').innerHTML = s1 + ' <span>%</span>';
+    document.getElementById('val-soil2').innerHTML = s2 + ' <span>%</span>';
 
-            // Histórico
-            history.s1.push(s1);
-            history.s2.push(s2);
-            if (history.s1.length > MAX_HIST) history.s1.shift();
-            if (history.s2.length > MAX_HIST) history.s2.shift();
-            if (history.s1.length > 1) updateSparks();
-        }
+    setArc(document.getElementById('arc-temp'), t / 50);
+    setArc(document.getElementById('arc-umid'), u / 100);
+    setNeedle(document.getElementById('needle-temp'), t / 50);
+    setNeedle(document.getElementById('needle-umid'), u / 100);
 
-        // ─── SIMULATION ────────────────────────────────────────────────
-        function simular() {
-            const t  = (23.5 + Math.random() * 3).toFixed(1);
-            const u  = (63   + Math.random() * 7).toFixed(1);
-            const s1 = Math.round(70 + Math.random() * 8 - 4);
-            const s2 = Math.round(38 + Math.random() * 6 - 4);
-            setValues(t, u, s1, s2);
-        }
+    document.getElementById('thermo-s1').style.height = Math.min(s1, 100) + '%';
+    document.getElementById('thermo-s2').style.height = Math.min(s2, 100) + '%';
 
-        // ─── FETCH / FALLBACK ──────────────────────────────────────────
-        function atualizar() {
-            fetch('/data', { signal: AbortSignal.timeout(2000) })
-                .then(r => r.json())
-                .then(d => {
-                    document.getElementById('status-text').innerText = 'Online · ESP32 Conectado';
-                    setValues(d.temp, d.umid, d.solo1, d.solo2);
-                })
-                .catch(() => {
-                    document.getElementById('status-text').innerText = 'Demo · Simulação Ativa';
-                    simular();
-                });
-        }
+    hist.s1.push(s1); hist.s2.push(s2);
+    if (hist.s1.length > MAX) hist.s1.shift();
+    if (hist.s2.length > MAX) hist.s2.shift();
+    updateSparks();
+}
 
-        // ─── TOGGLE CONTROLES ──────────────────────────────────────────
-        function toggleCtrl(el) {
-            el.classList.toggle('on');
-            const isOn = el.classList.contains('on');
-            const lbl = el.nextElementSibling;
-            if (el.id === 'toggle-led') lbl.innerText = isOn ? 'ON' : 'OFF';
-            if (el.id === 'toggle-pump') lbl.innerText = isOn ? 'AUTO' : 'OFF';
-            el.style.background = isOn ? 'var(--green)' : 'var(--text-muted)';
-            el.style.boxShadow  = isOn ? '0 0 12px var(--green-glow)' : 'none';
-            lbl.style.color     = isOn ? 'var(--green)' : 'var(--text-muted)';
-        }
+// ── Simulação ───────────────────────────────────────────────────
+function sim() {
+    setValues(
+        (23.5 + Math.random()*3).toFixed(1),
+        (63   + Math.random()*7).toFixed(1),
+        Math.round(70 + Math.random()*8 - 4),
+        Math.round(38 + Math.random()*6 - 4)
+    );
+}
 
-        // ─── PRÉ-POPULA HISTÓRICO COM DADOS COERENTES ─────────────────
-        for (let i = 0; i < MAX_HIST - 1; i++) {
-            history.s1.push(Math.round(65 + Math.random() * 16 - 8));
-            history.s2.push(Math.round(35 + Math.random() * 12 - 6));
-        }
+function refresh() {
+    fetch('/data', { signal: AbortSignal.timeout(2000) })
+        .then(r => r.json())
+        .then(d => { document.getElementById('status-text').textContent = 'ESP32 Online'; setValues(d.temp, d.umid, d.solo1, d.solo2); })
+        .catch(() => { document.getElementById('status-text').textContent = 'Simulação'; sim(); });
+}
 
-        // ─── INICIA ────────────────────────────────────────────────────
-        atualizar();
-        setInterval(atualizar, 3000);
-    </script>
+// ── Toggle controles ────────────────────────────────────────────
+function tog(el, lblId, onTxt, offTxt) {
+    el.classList.toggle('on'); el.classList.toggle('off');
+    const on = el.classList.contains('on');
+    const lbl = document.getElementById(lblId);
+    lbl.textContent = on ? onTxt : offTxt;
+    lbl.className = 'ctrl-val' + (on ? '' : ' off');
+}
+
+// ── Inicia ──────────────────────────────────────────────────────
+refresh();
+setInterval(refresh, 3000);
+</script>
 </body>
 </html>
