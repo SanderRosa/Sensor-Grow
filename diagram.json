@@ -1,0 +1,31 @@
+{
+  "version": 1,
+  "author": "Sander Cardoso Da Rosa",
+  "editor": "wokwi",
+  "parts": [
+    { "type": "wokwi-breadboard-half", "id": "bb1", "top": 217.8, "left": 41.2, "attrs": {} },
+    { "type": "board-esp32-devkit-c-v4", "id": "esp", "top": 201.6, "left": -119.96, "attrs": {} },
+    { "type": "wokwi-dht22", "id": "dht1", "top": 48.3, "left": 234.6, "attrs": {} },
+    { "type": "wokwi-potentiometer", "id": "pot1", "top": 85.1, "left": 57.4, "attrs": {} },
+    { "type": "wokwi-potentiometer", "id": "pot2", "top": 85.1, "left": 134.2, "attrs": {} }
+  ],
+  "connections": [
+    [ "esp:TX", "$serialMonitor:RX", "", [] ],
+    [ "esp:RX", "$serialMonitor:TX", "", [] ],
+    [ "esp:GND.2", "bb1:tp.1", "black", [ "v0" ] ],
+    [ "pot1:GND", "bb1:tp.2", "black", [ "v0" ] ],
+    [ "pot2:GND", "bb1:tp.9", "black", [ "v0" ] ],
+    [ "dht1:GND", "bb1:tp.19", "black", [ "v0" ] ],
+    [ "pot1:VCC", "bb1:tn.4", "red", [ "v0" ] ],
+    [ "pot2:VCC", "bb1:tn.10", "red", [ "v0" ] ],
+    [ "dht1:VCC", "bb1:tn.16", "red", [ "v0" ] ],
+    [ "esp:5V", "bb1:tn.1", "red", [ "h-19.05", "v28.8", "h163.2", "v-9.6" ] ],
+    [ "dht1:SDA", "bb1:1t.a", "green", [ "v96", "h-191.9" ] ],
+    [ "esp:22", "bb1:1t.e", "green", [ "h28.8", "v76.8" ] ],
+    [ "pot1:SIG", "bb1:4t.a", "green", [ "v0" ] ],
+    [ "pot2:SIG", "bb1:12t.a", "green", [ "v0" ] ],
+    [ "esp:32", "bb1:4t.e", "green", [ "h-28.65", "v153.6", "h240" ] ],
+    [ "esp:34", "bb1:12t.e", "green", [ "h-38.25", "v182.4", "h278.4" ] ]
+  ],
+  "dependencies": {}
+}
