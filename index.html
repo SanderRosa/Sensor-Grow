@@ -4,656 +4,787 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Sander's Holo-Tech Grow</title>
-    <link href="https://fonts.googleapis.com/css2?family=Rajdhani:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <title>Sensor Grow IoT — Dashboard Holográfico</title>
+    <meta name="description" content="Painel de monitoramento IoT em tempo real para cultivo inteligente. ESP32 com sensores DHT22 e solo capacitivo.">
+    <link href="https://fonts.googleapis.com/css2?family=Rajdhani:wght@400;500;600;700&family=Orbitron:wght@400;700;900&display=swap" rel="stylesheet">
     <style>
         :root {
-            --bg-dark: #040814;
-            --card-bg: #081224;
-            --cyan: #00f3ff;
-            --cyan-glow: rgba(0, 243, 255, 0.5);
-            --green: #0de07d;
-            --green-glow: rgba(13, 224, 125, 0.4);
+            --bg: #0a0f0a;
+            --bg2: #0d150d;
+            --card: #111811;
+            --card2: #0c120c;
+            --green: #00e676;
+            --green-dim: #00c853;
+            --green-glow: rgba(0, 230, 118, 0.35);
+            --green-faint: rgba(0, 230, 118, 0.08);
+            --cyan: #18ffff;
             --yellow: #ffea00;
-            --red: #ff3366;
-            --text-main: #e0f7fa;
-            --text-muted: #5e849c;
-            --border-glow: rgba(0, 243, 255, 0.2);
+            --red: #ff5252;
+            --text: #cce8cc;
+            --text-muted: #4a6e4a;
+            --border: rgba(0, 230, 118, 0.18);
+            --border-bright: rgba(0, 230, 118, 0.4);
         }
 
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-            font-family: 'Rajdhani', sans-serif;
-        }
+        * { margin: 0; padding: 0; box-sizing: border-box; }
 
         body {
-            background-color: var(--bg-dark);
-            color: var(--text-main);
+            background: var(--bg);
+            color: var(--text);
+            font-family: 'Rajdhani', sans-serif;
+            min-height: 100vh;
             display: flex;
             justify-content: center;
-            min-height: 100vh;
-            padding: 10px;
+            align-items: flex-start;
+            padding: 0 0 20px;
             background-image:
-                linear-gradient(rgba(0, 243, 255, 0.03) 1px, transparent 1px),
-                linear-gradient(90deg, rgba(0, 243, 255, 0.03) 1px, transparent 1px);
-            background-size: 20px 20px;
+                radial-gradient(ellipse at top, rgba(0, 230, 118, 0.04) 0%, transparent 60%),
+                linear-gradient(rgba(0, 230, 118, 0.02) 1px, transparent 1px),
+                linear-gradient(90deg, rgba(0, 230, 118, 0.02) 1px, transparent 1px);
+            background-size: 100% 100%, 30px 30px, 30px 30px;
         }
 
-        .phone-mockup {
+        .app {
             width: 100%;
-            max-width: 380px;
+            max-width: 400px;
             display: flex;
             flex-direction: column;
-            gap: 15px;
-            padding-bottom: 20px;
+            gap: 0;
         }
 
-        /* HEADER */
-        header {
+        /* ─── HEADER ─────────────────────────────── */
+        .header {
             display: flex;
             justify-content: space-between;
             align-items: center;
-            padding: 15px 5px;
+            padding: 20px 18px 14px;
         }
 
-        .icon-btn {
-            color: var(--cyan);
-            background: rgba(0, 243, 255, 0.1);
-            border: 1px solid var(--border-glow);
-            border-radius: 8px;
-            padding: 6px;
+        .header-title {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .header-title svg { color: var(--green); filter: drop-shadow(0 0 6px var(--green-glow)); }
+
+        .header-title h1 {
+            font-family: 'Orbitron', monospace;
+            font-size: 1.2rem;
+            font-weight: 700;
+            color: var(--text);
+            letter-spacing: 1px;
+        }
+
+        .header-avatar {
+            width: 36px;
+            height: 36px;
+            border: 1px solid var(--border-bright);
+            border-radius: 50%;
             display: flex;
             align-items: center;
             justify-content: center;
-            box-shadow: 0 0 10px rgba(0, 243, 255, 0.1);
+            color: var(--text-muted);
+            background: var(--card);
         }
 
-        .status-pill {
-            font-size: 0.9rem;
-            color: var(--green);
-            font-weight: 600;
-            letter-spacing: 1px;
+        .status-bar {
+            margin: 0 18px 12px;
             display: flex;
             align-items: center;
             gap: 8px;
-            text-shadow: 0 0 8px var(--green-glow);
-        }
-
-        /* CARDS GERAIS */
-        .holo-card {
-            background: var(--card-bg);
-            border: 1px solid var(--border-glow);
-            border-radius: 12px;
-            padding: 15px;
-            position: relative;
-            box-shadow: inset 0 0 20px rgba(0, 243, 255, 0.05), 0 5px 15px rgba(0, 0, 0, 0.5);
-            backdrop-filter: blur(5px);
-        }
-
-        /* Cantos Holográficos */
-        .holo-card::before,
-        .holo-card::after {
-            content: '';
-            position: absolute;
-            width: 10px;
-            height: 10px;
-        }
-
-        .holo-card::before {
-            top: -1px;
-            left: -1px;
-            border-top: 2px solid var(--cyan);
-            border-left: 2px solid var(--cyan);
-            border-radius: 12px 0 0 0;
-        }
-
-        .holo-card::after {
-            bottom: -1px;
-            right: -1px;
-            border-bottom: 2px solid var(--cyan);
-            border-right: 2px solid var(--cyan);
-            border-radius: 0 0 12px 0;
-        }
-
-        /* SEÇÃO 1: ISO CUBE & MINIS */
-        .top-grid {
-            display: grid;
-            grid-template-columns: 1.2fr 1fr;
-            gap: 12px;
-        }
-
-        .iso-box {
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            height: 160px;
-            position: relative;
-        }
-
-        .iso-svg {
-            width: 100%;
-            height: 100%;
-            filter: drop-shadow(0 0 5px var(--cyan-glow));
-            animation: float 4s ease-in-out infinite;
-        }
-
-        @keyframes float {
-
-            0%,
-            100% {
-                transform: translateY(0);
-            }
-
-            50% {
-                transform: translateY(-5px);
-            }
-        }
-
-        .mini-stats {
-            display: flex;
-            flex-direction: column;
-            gap: 12px;
-        }
-
-        .mini-card {
-            background: rgba(0, 0, 0, 0.3);
-            border: 1px solid rgba(0, 243, 255, 0.15);
-            border-radius: 8px;
-            padding: 10px;
-            flex: 1;
-            display: flex;
-            flex-direction: column;
-            justify-content: center;
-            position: relative;
-            overflow: hidden;
-        }
-
-        .mini-card-title {
-            font-size: 0.7rem;
+            font-size: 0.75rem;
             color: var(--text-muted);
             text-transform: uppercase;
+            letter-spacing: 2px;
         }
 
-        .mini-card-val {
-            font-size: 1.5rem;
-            font-weight: 700;
-            color: var(--cyan);
-            text-shadow: 0 0 8px var(--cyan-glow);
+        .status-dot {
+            width: 6px;
+            height: 6px;
+            border-radius: 50%;
+            background: var(--green);
+            box-shadow: 0 0 8px var(--green);
+            animation: pulse 2s ease-in-out infinite;
         }
 
-        .mini-card-bg {
-            position: absolute;
-            right: -10px;
-            bottom: -10px;
-            opacity: 0.2;
-            width: 50px;
+        @keyframes pulse {
+            0%, 100% { opacity: 1; box-shadow: 0 0 8px var(--green); }
+            50% { opacity: 0.6; box-shadow: 0 0 4px var(--green); }
         }
 
-        /* SEÇÃO 2: MIDDLE CHART */
-        .mid-section {
+        /* ─── GAUGE CARDS ────────────────────────── */
+        .gauges-row {
             display: grid;
-            grid-template-columns: 80px 1fr;
-            gap: 15px;
-            align-items: center;
+            grid-template-columns: 1fr 1fr;
+            gap: 10px;
+            padding: 0 14px;
+            margin-bottom: 10px;
         }
 
-        .dome-svg {
-            width: 100%;
-            filter: drop-shadow(0 0 5px var(--green-glow));
-        }
-
-        .chart-container {
-            width: 100%;
-            height: 80px;
-            position: relative;
-        }
-
-        .chart-svg {
-            width: 100%;
-            height: 100%;
-            overflow: visible;
-        }
-
-        .chart-line {
-            fill: none;
-            stroke: var(--cyan);
-            stroke-width: 2;
-            filter: drop-shadow(0 0 4px var(--cyan-glow));
-        }
-
-        .chart-fill {
-            fill: url(#cyanGrad);
-            opacity: 0.3;
-        }
-
-        .chart-labels {
+        .gauge-card {
+            background: var(--card);
+            border: 1px solid var(--border);
+            border-radius: 16px;
+            padding: 14px 10px;
             display: flex;
-            justify-content: space-between;
+            flex-direction: column;
+            align-items: center;
+            gap: 6px;
+            position: relative;
+            overflow: hidden;
+            box-shadow: inset 0 0 30px rgba(0,230,118,0.03);
+        }
+
+        .gauge-card::before {
+            content: '';
+            position: absolute;
+            top: 0; left: 0; right: 0;
+            height: 1px;
+            background: linear-gradient(90deg, transparent, var(--green-dim), transparent);
+        }
+
+        .gauge-label {
             font-size: 0.6rem;
             color: var(--text-muted);
-            margin-top: 5px;
+            text-transform: uppercase;
+            letter-spacing: 2px;
         }
 
-        /* SEÇÃO 3: RINGS & LEGEND */
-        .bot-grid {
-            display: grid;
-            grid-template-columns: 120px 1fr;
-            gap: 20px;
-            align-items: center;
-        }
-
-        .rings-container {
+        .gauge-wrap {
             position: relative;
-            width: 120px;
-            height: 120px;
+            width: 130px;
+            height: 130px;
         }
 
-        .ring-svg {
-            width: 100%;
-            height: 100%;
-            transform: rotate(-90deg);
-        }
+        .gauge-svg { width: 100%; height: 100%; }
 
-        .ring-bg {
-            fill: none;
-            stroke: rgba(255, 255, 255, 0.05);
-        }
-
-        .ring-prog {
-            fill: none;
-            stroke-linecap: round;
-            transition: stroke-dashoffset 1s ease;
-        }
-
-        .ring-center-icon {
+        .gauge-center {
             position: absolute;
             top: 50%;
             left: 50%;
-            transform: translate(-50%, -50%);
-            color: var(--cyan);
-            filter: drop-shadow(0 0 5px var(--cyan-glow));
+            transform: translate(-50%, -46%);
+            text-align: center;
         }
 
-        .legend-list {
-            display: flex;
-            flex-direction: column;
-            gap: 8px;
+        .gauge-val {
+            font-family: 'Orbitron', monospace;
+            font-size: 1.6rem;
+            font-weight: 700;
+            color: var(--text);
+            line-height: 1;
+            text-shadow: 0 0 12px var(--green-glow);
         }
 
-        .legend-item {
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-            font-size: 0.8rem;
-            font-weight: 600;
+        .gauge-unit {
+            font-size: 0.65rem;
+            color: var(--text-muted);
+            margin-top: 2px;
         }
 
-        .legend-label {
-            display: flex;
-            align-items: center;
-            gap: 8px;
-            color: var(--text-main);
+        .gauge-hint {
+            font-size: 0.6rem;
+            color: var(--text-muted);
+            text-align: center;
+            line-height: 1.3;
         }
 
-        .legend-dot {
-            width: 8px;
-            height: 8px;
-            border-radius: 50%;
-        }
-
-        /* GALERIA DE HARDWARE */
-        .hw-title {
-            font-size: 0.8rem;
-            color: var(--cyan);
-            margin-top: 10px;
-            text-transform: uppercase;
-            letter-spacing: 1px;
-            display: flex;
-            align-items: center;
-            gap: 5px;
-        }
-
-        .hw-title::before {
-            content: '';
-            width: 5px;
-            height: 5px;
-            background: var(--cyan);
-        }
-
-        .hw-grid {
-            display: flex;
+        /* ─── SOIL CARDS ─────────────────────────── */
+        .soil-row {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
             gap: 10px;
-            overflow-x: auto;
-            padding-bottom: 5px;
-            scrollbar-width: thin;
-            scrollbar-color: var(--cyan) transparent;
+            padding: 0 14px;
+            margin-bottom: 10px;
         }
 
-        .hw-item {
-            min-width: 70px;
-            height: 70px;
-            border: 1px solid var(--border-glow);
-            border-radius: 8px;
+        .soil-card {
+            background: var(--card);
+            border: 1px solid var(--border);
+            border-radius: 16px;
+            padding: 14px 12px;
             position: relative;
-            background: #000;
-            flex-shrink: 0;
             overflow: hidden;
         }
 
-        .hw-item img {
-            width: 100%;
-            height: 100%;
-            object-fit: cover;
-            opacity: 0.6;
-            filter: sepia(1) hue-rotate(150deg) saturate(2);
-            transition: 0.3s;
-        }
-
-        .hw-item:hover img {
-            opacity: 1;
-            filter: none;
-        }
-
-        .hw-tag {
+        .soil-card::before {
+            content: '';
             position: absolute;
-            bottom: 0;
-            width: 100%;
-            background: rgba(0, 243, 255, 0.7);
-            color: #000;
-            font-size: 0.5rem;
-            text-align: center;
+            top: 0; left: 0; right: 0;
+            height: 1px;
+            background: linear-gradient(90deg, transparent, var(--green-dim), transparent);
+        }
+
+        .soil-header {
+            margin-bottom: 8px;
+        }
+
+        .soil-title {
+            font-size: 0.6rem;
+            color: var(--green-dim);
+            text-transform: uppercase;
+            letter-spacing: 1.5px;
             font-weight: 700;
         }
 
-        /* BOTTOM NAV */
+        .soil-subtitle {
+            font-size: 0.55rem;
+            color: var(--text-muted);
+            margin-top: 2px;
+        }
+
+        .soil-pct {
+            font-family: 'Orbitron', monospace;
+            font-size: 1.4rem;
+            font-weight: 700;
+            color: var(--text);
+            text-shadow: 0 0 10px var(--green-glow);
+            margin-bottom: 10px;
+        }
+
+        .soil-pct span { font-size: 0.75rem; color: var(--text-muted); }
+
+        .thermometer-wrap {
+            display: flex;
+            gap: 10px;
+            align-items: flex-end;
+            height: 100px;
+        }
+
+        .thermo {
+            width: 22px;
+            height: 90px;
+            border: 1.5px solid var(--border-bright);
+            border-radius: 12px;
+            background: rgba(0,0,0,0.4);
+            position: relative;
+            overflow: hidden;
+            flex-shrink: 0;
+        }
+
+        .thermo-fill {
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            width: 100%;
+            border-radius: 0 0 10px 10px;
+            background: linear-gradient(to top, var(--green), rgba(0,230,118,0.4));
+            box-shadow: 0 -4px 12px var(--green-glow);
+            transition: height 1.5s ease;
+        }
+
+        .thermo-tick-wrap {
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+            height: 90px;
+            padding: 4px 0;
+        }
+
+        .thermo-tick {
+            display: flex;
+            align-items: center;
+            gap: 4px;
+            font-size: 0.45rem;
+            color: var(--text-muted);
+        }
+
+        .thermo-tick::before {
+            content: '—';
+            color: var(--border-bright);
+            font-size: 0.5rem;
+        }
+
+        /* Mini Sparkline */
+        .mini-spark {
+            background: var(--card);
+            border: 1px solid var(--border);
+            border-radius: 12px;
+            padding: 10px 12px 8px;
+            margin: 0 14px 10px;
+        }
+
+        .mini-spark-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 6px;
+        }
+
+        .mini-spark-label {
+            font-size: 0.6rem;
+            color: var(--text-muted);
+            text-transform: uppercase;
+            letter-spacing: 2px;
+        }
+
+        .mini-spark-time {
+            font-size: 0.55rem;
+            color: var(--text-muted);
+        }
+
+        .sparks-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 8px;
+        }
+
+        .spark-item { position: relative; }
+
+        .spark-item svg { width: 100%; height: 40px; }
+
+        .spark-dot {
+            font-size: 0.55rem;
+            color: var(--text-muted);
+            margin-top: 2px;
+            text-align: center;
+        }
+
+        /* ─── CONTROLS ROW ───────────────────────── */
+        .controls-row {
+            display: flex;
+            align-items: center;
+            justify-content: space-around;
+            padding: 12px 18px;
+            border-top: 1px solid var(--border);
+            border-bottom: 1px solid var(--border);
+            margin: 0 14px 14px;
+            background: var(--card);
+            border-radius: 14px;
+        }
+
+        .control-item {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .control-label {
+            font-size: 0.65rem;
+            font-weight: 700;
+            color: var(--text-muted);
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        .toggle {
+            width: 44px;
+            height: 24px;
+            background: var(--green);
+            border-radius: 12px;
+            position: relative;
+            box-shadow: 0 0 12px var(--green-glow);
+            cursor: pointer;
+            transition: background 0.3s;
+        }
+
+        .toggle::after {
+            content: '';
+            position: absolute;
+            top: 3px; left: 3px;
+            width: 18px; height: 18px;
+            background: #fff;
+            border-radius: 50%;
+            box-shadow: 0 1px 4px rgba(0,0,0,0.3);
+            transition: left 0.3s;
+        }
+
+        .toggle.on::after { left: 23px; }
+
+        .toggle-label {
+            font-size: 0.6rem;
+            color: var(--green);
+            font-weight: 700;
+            text-shadow: 0 0 6px var(--green-glow);
+        }
+
+        /* ─── BOTTOM NAV ─────────────────────────── */
         .bottom-nav {
             display: flex;
             justify-content: space-around;
             align-items: center;
-            background: var(--card-bg);
-            border: 1px solid var(--border-glow);
-            border-radius: 20px;
-            padding: 12px 20px;
-            margin-top: auto;
-            box-shadow: 0 10px 20px rgba(0, 0, 0, 0.5);
+            padding: 14px 20px;
+            background: var(--card2);
+            border-top: 1px solid var(--border);
+            margin: 0 14px;
+            border-radius: 0 0 20px 20px;
+            border: 1px solid var(--border);
         }
 
-        .nav-icon {
-            width: 24px;
-            height: 24px;
+        .nav-btn {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 4px;
             color: var(--text-muted);
-            transition: 0.3s;
             cursor: pointer;
+            transition: color 0.2s;
         }
 
-        .nav-icon.active {
+        .nav-btn.active {
             color: var(--green);
-            filter: drop-shadow(0 0 5px var(--green-glow));
+            filter: drop-shadow(0 0 4px var(--green-glow));
         }
+
+        .nav-btn svg { width: 22px; height: 22px; }
+
+        .nav-indicator {
+            position: relative;
+        }
+
+        .nav-indicator::after {
+            content: '';
+            position: absolute;
+            bottom: -6px;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 20px;
+            height: 2px;
+            background: var(--green);
+            border-radius: 1px;
+            box-shadow: 0 0 6px var(--green);
+        }
+
+        /* Tick marks on gauge */
+        .tick { stroke: var(--border-bright); stroke-width: 1; }
+        .tick-major { stroke: rgba(0,230,118,0.4); stroke-width: 1.5; }
     </style>
 </head>
 
 <body>
+    <div class="app">
 
-    <div class="phone-mockup">
         <!-- HEADER -->
-        <header>
-            <div class="icon-btn">
-                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                    <line x1="3" y1="12" x2="21" y2="12"></line>
-                    <line x1="3" y1="6" x2="21" y2="6"></line>
-                    <line x1="3" y1="18" x2="21" y2="18"></line>
+        <div class="header">
+            <div class="header-title">
+                <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M12 2a10 10 0 0 1 10 10c0 5-4 9-10 12C6 21 2 17 2 12A10 10 0 0 1 12 2z"/>
+                    <path d="M12 6v6M12 12l4 2"/>
                 </svg>
+                <h1>Smart Grow</h1>
             </div>
-            <div class="status-pill">Status: Optimizing</div>
-            <div class="icon-btn">
-                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                    <circle cx="12" cy="12" r="3"></circle>
-                    <path
-                        d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z">
-                    </path>
+            <div class="header-avatar">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/>
+                    <circle cx="12" cy="7" r="4"/>
                 </svg>
-            </div>
-        </header>
-
-        <!-- TOP GRID (Cubo e Valores dos Vasos) -->
-        <div class="top-grid">
-            <div class="holo-card iso-box">
-                <svg class="iso-svg" viewBox="0 0 100 100">
-                    <!-- Cubo Isométrico Wireframe -->
-                    <path d="M50 15 L85 35 L50 55 L15 35 Z" fill="rgba(0, 243, 255, 0.05)" stroke="var(--cyan)"
-                        stroke-width="1" />
-                    <path d="M15 35 L50 55 L50 95 L15 75 Z" fill="rgba(0, 243, 255, 0.02)" stroke="var(--cyan)"
-                        stroke-width="1" />
-                    <path d="M85 35 L50 55 L50 95 L85 75 Z" fill="rgba(0, 243, 255, 0.08)" stroke="var(--cyan)"
-                        stroke-width="1" />
-                    <!-- Planta Interna -->
-                    <path d="M50 85 Q45 60 50 30" fill="none" stroke="var(--green)" stroke-width="2"
-                        stroke-linecap="round" />
-                    <path d="M50 65 Q35 60 30 45" fill="none" stroke="var(--green)" stroke-width="1.5"
-                        stroke-linecap="round" />
-                    <path d="M50 55 Q65 50 70 35" fill="none" stroke="var(--green)" stroke-width="1.5"
-                        stroke-linecap="round" />
-                    <!-- Glow points -->
-                    <circle cx="50" cy="30" r="2" fill="#fff" />
-                    <circle cx="30" cy="45" r="1.5" fill="#fff" />
-                    <circle cx="70" cy="35" r="1.5" fill="#fff" />
-                    <circle cx="50" cy="55" r="1.5" fill="#fff" />
-                </svg>
-            </div>
-            <div class="mini-stats">
-                <div class="mini-card">
-                    <div class="mini-card-title">Pot 1 Moisture</div>
-                    <div class="mini-card-val"><span id="soil1-text">--</span></div>
-                    <svg class="mini-card-bg" viewBox="0 0 24 24" fill="none" stroke="var(--cyan)">
-                        <path d="M12 2v20M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6" />
-                    </svg>
-                </div>
-                <div class="mini-card">
-                    <div class="mini-card-title">Pot 2 Moisture</div>
-                    <div class="mini-card-val" style="color:var(--green); text-shadow:0 0 8px var(--green-glow);"><span
-                            id="soil2-text">--</span></div>
-                    <svg class="mini-card-bg" viewBox="0 0 24 24" fill="none" stroke="var(--green)">
-                        <path d="M12 2v20M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6" />
-                    </svg>
-                </div>
             </div>
         </div>
 
-        <!-- MIDDLE SECTION (Gráfico e Dome) -->
-        <div class="holo-card mid-section">
-            <div class="dome-container">
-                <svg class="dome-svg" viewBox="0 0 100 100">
-                    <!-- Dome Base -->
-                    <ellipse cx="50" cy="80" rx="35" ry="10" fill="none" stroke="var(--cyan)" stroke-width="2" />
-                    <!-- Dome Glass -->
-                    <path d="M15 80 Q15 20 50 20 Q85 20 85 80" fill="rgba(0, 243, 255, 0.05)" stroke="var(--cyan)"
-                        stroke-width="1.5" stroke-dasharray="4 4" />
-                    <!-- Mini Plant -->
-                    <path d="M50 80 Q40 60 50 40 Q60 50 70 45" fill="none" stroke="var(--green)" stroke-width="2" />
-                    <path d="M50 65 Q40 55 30 50" fill="none" stroke="var(--green)" stroke-width="2" />
-                </svg>
-            </div>
-            <div>
-                <div style="font-size: 0.7rem; color: var(--cyan); margin-bottom: 5px;">ENVIRONMENTAL DATA</div>
-                <div class="chart-container">
-                    <svg class="chart-svg" viewBox="0 0 100 40" preserveAspectRatio="none">
+        <div class="status-bar">
+            <div class="status-dot"></div>
+            <span id="status-text">Online · Monitorando</span>
+        </div>
+
+        <!-- GAUGES DE TEMPERATURA E UMIDADE -->
+        <div class="gauges-row">
+            <!-- TEMPERATURE GAUGE -->
+            <div class="gauge-card">
+                <div class="gauge-label">Temperatura</div>
+                <div class="gauge-wrap">
+                    <svg class="gauge-svg" viewBox="0 0 130 130">
                         <defs>
-                            <linearGradient id="cyanGrad" x1="0" y1="0" x2="0" y2="1">
-                                <stop offset="0%" stop-color="var(--cyan)" />
-                                <stop offset="100%" stop-color="transparent" />
+                            <linearGradient id="gGreen" x1="0" y1="1" x2="1" y2="0">
+                                <stop offset="0%" stop-color="#00c853"/>
+                                <stop offset="100%" stop-color="#00e676"/>
                             </linearGradient>
                         </defs>
-                        <path class="chart-fill" d="M0,40 L0,20 Q15,5 30,25 T60,15 T85,25 L100,10 L100,40 Z" />
-                        <path class="chart-line" d="M0,20 Q15,5 30,25 T60,15 T85,25 L100,10" />
+                        <!-- Track -->
+                        <circle cx="65" cy="65" r="50" fill="none" stroke="rgba(0,230,118,0.08)" stroke-width="10" stroke-dasharray="251.2 314.16" stroke-dashoffset="-31.4" transform="rotate(135 65 65)"/>
+                        <!-- Progress -->
+                        <circle id="gauge-temp-arc" cx="65" cy="65" r="50" fill="none" stroke="url(#gGreen)" stroke-width="10" stroke-linecap="round" stroke-dasharray="0 314.16" stroke-dashoffset="-31.4" transform="rotate(135 65 65)" style="filter: drop-shadow(0 0 6px rgba(0,230,118,0.5)); transition: stroke-dasharray 1.5s ease;"/>
+                        <!-- Tick marks -->
+                        <g id="temp-ticks"></g>
+                        <!-- Needle base -->
+                        <circle cx="65" cy="65" r="6" fill="var(--card)" stroke="var(--green)" stroke-width="1.5"/>
+                        <!-- Needle -->
+                        <line id="needle-temp" x1="65" y1="65" x2="65" y2="22" stroke="var(--green)" stroke-width="2" stroke-linecap="round" transform="rotate(-135 65 65)" style="filter: drop-shadow(0 0 3px var(--green)); transition: transform 1.5s ease;"/>
                     </svg>
+                    <div class="gauge-center">
+                        <div class="gauge-val" id="val-temp">--</div>
+                        <div class="gauge-unit">°C</div>
+                    </div>
                 </div>
-                <div class="chart-labels"><span>00:00</span><span>12:00</span><span>24:00</span></div>
+                <div class="gauge-hint">Ideal 22-26 °C</div>
+            </div>
+
+            <!-- HUMIDITY GAUGE -->
+            <div class="gauge-card">
+                <div class="gauge-label">Umidade do Ar</div>
+                <div class="gauge-wrap">
+                    <svg class="gauge-svg" viewBox="0 0 130 130">
+                        <!-- Track -->
+                        <circle cx="65" cy="65" r="50" fill="none" stroke="rgba(0,230,118,0.08)" stroke-width="10" stroke-dasharray="251.2 314.16" stroke-dashoffset="-31.4" transform="rotate(135 65 65)"/>
+                        <!-- Progress -->
+                        <circle id="gauge-umid-arc" cx="65" cy="65" r="50" fill="none" stroke="url(#gGreen)" stroke-width="10" stroke-linecap="round" stroke-dasharray="0 314.16" stroke-dashoffset="-31.4" transform="rotate(135 65 65)" style="filter: drop-shadow(0 0 6px rgba(0,230,118,0.5)); transition: stroke-dasharray 1.5s ease;"/>
+                        <!-- Needle base -->
+                        <circle cx="65" cy="65" r="6" fill="var(--card)" stroke="var(--green)" stroke-width="1.5"/>
+                        <!-- Needle -->
+                        <line id="needle-umid" x1="65" y1="65" x2="65" y2="22" stroke="var(--green)" stroke-width="2" stroke-linecap="round" transform="rotate(-135 65 65)" style="filter: drop-shadow(0 0 3px var(--green)); transition: transform 1.5s ease;"/>
+                    </svg>
+                    <div class="gauge-center">
+                        <div class="gauge-val" id="val-umid">--</div>
+                        <div class="gauge-unit">%</div>
+                    </div>
+                </div>
+                <div class="gauge-hint">Ideal 60-70 %</div>
             </div>
         </div>
 
-        <!-- BOTTOM SECTION (Rings & Legends) -->
-        <div class="holo-card bot-grid">
-            <div class="rings-container">
-                <svg class="ring-svg" viewBox="0 0 100 100">
-                    <!-- Ring 1: Temp (Cyan) r=40, c=251.2 -->
-                    <circle class="ring-bg" cx="50" cy="50" r="40" stroke-width="4" />
-                    <circle id="ring-temp" class="ring-prog" cx="50" cy="50" r="40" stroke-width="4"
-                        stroke="var(--cyan)" stroke-dasharray="251.2" stroke-dashoffset="251.2"
-                        style="filter: drop-shadow(0 0 3px var(--cyan-glow))" />
-
-                    <!-- Ring 2: Humid (Green) r=30, c=188.5 -->
-                    <circle class="ring-bg" cx="50" cy="50" r="30" stroke-width="4" />
-                    <circle id="ring-umid" class="ring-prog" cx="50" cy="50" r="30" stroke-width="4"
-                        stroke="var(--green)" stroke-dasharray="188.5" stroke-dashoffset="188.5"
-                        style="filter: drop-shadow(0 0 3px var(--green-glow))" />
-
-                    <!-- Ring 3: Soil 1 (Yellow) r=20, c=125.6 -->
-                    <circle class="ring-bg" cx="50" cy="50" r="20" stroke-width="4" />
-                    <circle id="ring-soil1" class="ring-prog" cx="50" cy="50" r="20" stroke-width="4"
-                        stroke="var(--yellow)" stroke-dasharray="125.6" stroke-dashoffset="125.6" />
-
-                    <!-- Ring 4: Soil 2 (Red) r=10, c=62.8 -->
-                    <circle class="ring-bg" cx="50" cy="50" r="10" stroke-width="4" />
-                    <circle id="ring-soil2" class="ring-prog" cx="50" cy="50" r="10" stroke-width="4"
-                        stroke="var(--red)" stroke-dasharray="62.8" stroke-dashoffset="62.8" />
-                </svg>
-                <div class="ring-center-icon">
-                    <svg width="12" height="12" viewBox="0 0 24 24" fill="currentColor">
-                        <polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"></polygon>
-                    </svg>
+        <!-- SOIL MOISTURE CARDS -->
+        <div class="soil-row">
+            <!-- POT 1 -->
+            <div class="soil-card">
+                <div class="soil-header">
+                    <div class="soil-title">Umidade Solo · Vaso 1</div>
+                    <div class="soil-subtitle">Sensor Capacitivo</div>
+                </div>
+                <div class="soil-pct" id="val-soil1">-- <span>%</span></div>
+                <div class="thermometer-wrap">
+                    <div class="thermo">
+                        <div class="thermo-fill" id="thermo-soil1" style="height: 0%;"></div>
+                    </div>
+                    <div class="thermo-tick-wrap">
+                        <div class="thermo-tick">100%</div>
+                        <div class="thermo-tick">75%</div>
+                        <div class="thermo-tick">50%</div>
+                        <div class="thermo-tick">25%</div>
+                        <div class="thermo-tick">0%</div>
+                    </div>
                 </div>
             </div>
 
-            <div class="legend-list">
-                <div class="legend-item">
-                    <div class="legend-label">
-                        <div class="legend-dot" style="background: var(--cyan);"></div> Temperature
-                    </div>
-                    <div style="color: var(--cyan);" id="val-temp">--</div>
+            <!-- POT 2 -->
+            <div class="soil-card">
+                <div class="soil-header">
+                    <div class="soil-title">Umidade Solo · Vaso 2</div>
+                    <div class="soil-subtitle">Sensor Capacitivo</div>
                 </div>
-                <div class="legend-item">
-                    <div class="legend-label">
-                        <div class="legend-dot" style="background: var(--green);"></div> Humidity
+                <div class="soil-pct" id="val-soil2">-- <span>%</span></div>
+                <div class="thermometer-wrap">
+                    <div class="thermo">
+                        <div class="thermo-fill" id="thermo-soil2" style="height: 0%;"></div>
                     </div>
-                    <div style="color: var(--green);" id="val-umid">--</div>
-                </div>
-                <div class="legend-item">
-                    <div class="legend-label">
-                        <div class="legend-dot" style="background: var(--yellow);"></div> Soil Pot 1
+                    <div class="thermo-tick-wrap">
+                        <div class="thermo-tick">100%</div>
+                        <div class="thermo-tick">75%</div>
+                        <div class="thermo-tick">50%</div>
+                        <div class="thermo-tick">25%</div>
+                        <div class="thermo-tick">0%</div>
                     </div>
-                    <div style="color: var(--yellow);" id="val-s1">--</div>
-                </div>
-                <div class="legend-item">
-                    <div class="legend-label">
-                        <div class="legend-dot" style="background: var(--red);"></div> Soil Pot 2
-                    </div>
-                    <div style="color: var(--red);" id="val-s2">--</div>
                 </div>
             </div>
         </div>
 
-        <!-- HARDWARE LOG (Imagens originais do usuário) -->
-        <div>
-            <div class="hw-title">Hardware Log</div>
-            <div class="hw-grid">
-                <div class="hw-item">
-                    <img src="image_0962f8.png" alt="ESP32"
-                        onerror="this.src='data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSIxMDAlIiBoZWlnaHQ9IjEwMCUiPjxyZWN0IHdpZHRoPSIxMDAlIiBoZWlnaHQ9IjEwMCUiIGZpbGw9IiMyMiIvPjx0ZXh0IHg9IjUwJSIgeT0iNTAlIiBmaWxsPSIjNzc3IiBkeT0iLjNlbSIgdGV4dC1hbmNob3I9Im1pZGRsZSI+Tk8gSU1BR0U8L3RleHQ+PC9zdmc+'">
-                    <div class="hw-tag">ESP32</div>
+        <!-- MINI SPARKLINES (histórico simulado 24h) -->
+        <div class="mini-spark">
+            <div class="mini-spark-header">
+                <span class="mini-spark-label">Histórico · Solo</span>
+                <span class="mini-spark-time">últimas 24h</span>
+            </div>
+            <div class="sparks-grid">
+                <div class="spark-item">
+                    <svg viewBox="0 0 100 40" preserveAspectRatio="none">
+                        <defs>
+                            <linearGradient id="sg1" x1="0" y1="0" x2="0" y2="1">
+                                <stop offset="0%" stop-color="#00e676" stop-opacity="0.4"/>
+                                <stop offset="100%" stop-color="#00e676" stop-opacity="0"/>
+                            </linearGradient>
+                        </defs>
+                        <path id="spark-s1-fill" fill="url(#sg1)" d=""/>
+                        <path id="spark-s1" fill="none" stroke="#00e676" stroke-width="1.5" d=""/>
+                    </svg>
+                    <div class="spark-dot">Vaso 1</div>
                 </div>
-                <div class="hw-item">
-                    <img src="image_095833.png" alt="Sensor Capacitivo"
-                        onerror="this.src='data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSIxMDAlIiBoZWlnaHQ9IjEwMCUiPjxyZWN0IHdpZHRoPSIxMDAlIiBoZWlnaHQ9IjEwMCUiIGZpbGw9IiMyMiIvPjx0ZXh0IHg9IjUwJSIgeT0iNTAlIiBmaWxsPSIjNzc3IiBkeT0iLjNlbSIgdGV4dC1hbmNob3I9Im1pZGRsZSI+Tk8gSU1BR0U8L3RleHQ+PC9zdmc+'">
-                    <div class="hw-tag">SOIL SENS</div>
+                <div class="spark-item">
+                    <svg viewBox="0 0 100 40" preserveAspectRatio="none">
+                        <defs>
+                            <linearGradient id="sg2" x1="0" y1="0" x2="0" y2="1">
+                                <stop offset="0%" stop-color="#00e676" stop-opacity="0.4"/>
+                                <stop offset="100%" stop-color="#00e676" stop-opacity="0"/>
+                            </linearGradient>
+                        </defs>
+                        <path id="spark-s2-fill" fill="url(#sg2)" d=""/>
+                        <path id="spark-s2" fill="none" stroke="#00e676" stroke-width="1.5" d=""/>
+                    </svg>
+                    <div class="spark-dot">Vaso 2</div>
                 </div>
-                <div class="hw-item">
-                    <img src="image_09723c.png" alt="Fonte USB"
-                        onerror="this.src='data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSIxMDAlIiBoZWlnaHQ9IjEwMCUiPjxyZWN0IHdpZHRoPSIxMDAlIiBoZWlnaHQ9IjEwMCUiIGZpbGw9IiMyMiIvPjx0ZXh0IHg9IjUwJSIgeT0iNTAlIiBmaWxsPSIjNzc3IiBkeT0iLjNlbSIgdGV4dC1hbmNob3I9Im1pZGRsZSI+Tk8gSU1BR0U8L3RleHQ+PC9zdmc+'">
-                    <div class="hw-tag">PWR HUB</div>
-                </div>
-                <div class="hw-item">
-                    <img src="image_0972f7.png" alt="Cabo Alarme"
-                        onerror="this.src='data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSIxMDAlIiBoZWlnaHQ9IjEwMCUiPjxyZWN0IHdpZHRoPSIxMDAlIiBoZWlnaHQ9IjEwMCUiIGZpbGw9IiMyMiIvPjx0ZXh0IHg9IjUwJSIgeT0iNTAlIiBmaWxsPSIjNzc3IiBkeT0iLjNlbSIgdGV4dC1hbmNob3I9Im1pZGRsZSI+Tk8gSU1BR0U8L3RleHQ+PC9zdmc+'">
-                    <div class="hw-tag">CABLE</div>
-                </div>
-                <div class="hw-item">
-                    <img src="image_fd33be.png" alt="Wokwi"
-                        onerror="this.src='data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSIxMDAlIiBoZWlnaHQ9IjEwMCUiPjxyZWN0IHdpZHRoPSIxMDAlIiBoZWlnaHQ9IjEwMCUiIGZpbGw9IiMyMiIvPjx0ZXh0IHg9IjUwJSIgeT0iNTAlIiBmaWxsPSIjNzc3IiBkeT0iLjNlbSIgdGV4dC1hbmNob3I9Im1pZGRsZSI+Tk8gSU1BR0U8L3RleHQ+PC9zdmc+'">
-                    <div class="hw-tag">WOKWI</div>
-                </div>
+            </div>
+        </div>
+
+        <!-- CONTROLES -->
+        <div class="controls-row">
+            <div class="control-item">
+                <div class="control-label">Luz LED</div>
+                <div class="toggle on" id="toggle-led" onclick="toggleCtrl(this)"></div>
+                <div class="toggle-label" id="lbl-led">ON</div>
+            </div>
+            <div style="width:1px; height:30px; background: var(--border);"></div>
+            <div class="control-item">
+                <div class="control-label">Bomba</div>
+                <div class="toggle on" id="toggle-pump" onclick="toggleCtrl(this)"></div>
+                <div class="toggle-label" id="lbl-pump">AUTO</div>
             </div>
         </div>
 
         <!-- BOTTOM NAV -->
         <div class="bottom-nav">
-            <svg class="nav-icon active" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                <path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"></path>
-            </svg>
-            <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                <path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"></path>
-                <path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"></path>
-            </svg>
-            <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                <path
-                    d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z">
-                </path>
-            </svg>
-            <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                <polyline points="22 12 18 12 15 21 9 3 6 12 2 12"></polyline>
-            </svg>
+            <div class="nav-btn active nav-indicator">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round">
+                    <path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/>
+                    <polyline points="9 22 9 12 15 12 15 22"/>
+                </svg>
+            </div>
+            <div class="nav-btn">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round">
+                    <path d="M12 2a7 7 0 0 1 7 7c0 4-3 6-7 13C8 15 5 13 5 9a7 7 0 0 1 7-7z"/>
+                    <circle cx="12" cy="9" r="2.5"/>
+                </svg>
+            </div>
+            <div class="nav-btn">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round">
+                    <path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/>
+                    <path d="M13.73 21a2 2 0 0 1-3.46 0"/>
+                </svg>
+            </div>
+            <div class="nav-btn">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round">
+                    <circle cx="12" cy="12" r="3"/>
+                    <path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/>
+                </svg>
+            </div>
         </div>
 
     </div>
 
     <script>
-        function setValues(t, u, s1, s2) {
-            t = parseFloat(t); u = parseFloat(u);
-            s1 = parseInt(s1); s2 = parseInt(s2);
+        // ─── GAUGE ARC ─────────────────────────────────────────────────
+        // Arco visível = 270° → circunferência total C = 2π*50 = 314.16
+        // Arco track = 251.2 (270/360*314.16)
+        const C = 314.16;
+        const ARC = 251.2; // 270° visíveis
 
-            // Textos com unidade correta
-            document.getElementById('val-temp').innerText = t.toFixed(1) + '\u00B0C';
-            document.getElementById('val-umid').innerText = u.toFixed(1) + '%';
-            document.getElementById('soil1-text').innerText = s1 + '%';
-            document.getElementById('soil2-text').innerText = s2 + '%';
-            document.getElementById('val-s1').innerText = s1 + '%';
-            document.getElementById('val-s2').innerText = s2 + '%';
-
-            // Anima Rings (C = 2*PI*r)
-            // Ring Temp:  r=40, C=251.2, escala max 50C
-            document.getElementById('ring-temp').style.strokeDashoffset = 251.2 - (251.2 * Math.min(t / 50, 1));
-            // Ring Umid:  r=30, C=188.5, escala max 100%
-            document.getElementById('ring-umid').style.strokeDashoffset = 188.5 - (188.5 * Math.min(u / 100, 1));
-            // Ring Solo1: r=20, C=125.6
-            document.getElementById('ring-soil1').style.strokeDashoffset = 125.6 - (125.6 * Math.min(s1 / 100, 1));
-            // Ring Solo2: r=10, C=62.8
-            document.getElementById('ring-soil2').style.strokeDashoffset = 62.8 - (62.8 * Math.min(s2 / 100, 1));
+        function setGaugeArc(arcEl, pct) {
+            const filled = ARC * Math.min(Math.max(pct, 0), 1);
+            arcEl.setAttribute('stroke-dasharray', `${filled} ${C}`);
         }
 
-        // Preview local: simula com precis\u00e3o real dos sensores
+        function setNeedle(needleEl, pct) {
+            // -135° = 0%  →  +135° = 100%   → span 270°
+            const deg = -135 + pct * 270;
+            needleEl.setAttribute('transform', `rotate(${deg} 65 65)`);
+        }
+
+        // ─── THERMOMETERS ──────────────────────────────────────────────
+        function setThermo(id, pct) {
+            const el = document.getElementById(id);
+            if (el) el.style.height = Math.min(Math.max(pct * 100, 0), 100) + '%';
+        }
+
+        // ─── SPARKLINES (histórico simulado) ──────────────────────────
+        const history = { s1: [], s2: [] };
+        const MAX_HIST = 20;
+
+        function buildPath(points) {
+            if (!points.length) return '';
+            const xStep = 100 / (MAX_HIST - 1);
+            const pts = points.map((v, i) => {
+                const x = i * xStep;
+                const y = 40 - (v / 100) * 35;
+                return `${x.toFixed(1)},${y.toFixed(1)}`;
+            });
+            const line = 'M' + pts.join(' L');
+            const fill = line + ` L${100},40 L0,40 Z`;
+            return { line, fill };
+        }
+
+        function updateSparks() {
+            ['s1', 's2'].forEach(k => {
+                const { line, fill } = buildPath(history[k]);
+                const lEl = document.getElementById(`spark-${k}`);
+                const fEl = document.getElementById(`spark-${k}-fill`);
+                if (lEl) lEl.setAttribute('d', line);
+                if (fEl) fEl.setAttribute('d', fill);
+            });
+        }
+
+        // ─── APPLY VALUES ──────────────────────────────────────────────
+        function setValues(t, u, s1, s2) {
+            t = parseFloat(t) || 0;
+            u = parseFloat(u) || 0;
+            s1 = parseInt(s1) || 0;
+            s2 = parseInt(s2) || 0;
+
+            // Textos
+            document.getElementById('val-temp').innerText = t.toFixed(1);
+            document.getElementById('val-umid').innerText = u.toFixed(1);
+            document.getElementById('val-soil1').innerHTML = s1 + ' <span>%</span>';
+            document.getElementById('val-soil2').innerHTML = s2 + ' <span>%</span>';
+
+            // Gauges: temp 0-50°C, umid 0-100%
+            const tPct = t / 50;
+            const uPct = u / 100;
+            setGaugeArc(document.getElementById('gauge-temp-arc'), tPct);
+            setGaugeArc(document.getElementById('gauge-umid-arc'), uPct);
+            setNeedle(document.getElementById('needle-temp'), tPct);
+            setNeedle(document.getElementById('needle-umid'), uPct);
+
+            // Thermometers
+            setThermo('thermo-soil1', s1 / 100);
+            setThermo('thermo-soil2', s2 / 100);
+
+            // Histórico
+            history.s1.push(s1);
+            history.s2.push(s2);
+            if (history.s1.length > MAX_HIST) history.s1.shift();
+            if (history.s2.length > MAX_HIST) history.s2.shift();
+            if (history.s1.length > 1) updateSparks();
+        }
+
+        // ─── SIMULATION ────────────────────────────────────────────────
         function simular() {
-            const t = (23.5 + Math.random() * 3).toFixed(1);
-            const u = (63.0 + Math.random() * 7).toFixed(1); // 1 decimal
-            const s1 = Math.max(0, Math.min(100, Math.round(70 + Math.random() * 8 - 4)));
-            const s2 = Math.max(0, Math.min(100, Math.round(38 + Math.random() * 6 - 4)));
+            const t  = (23.5 + Math.random() * 3).toFixed(1);
+            const u  = (63   + Math.random() * 7).toFixed(1);
+            const s1 = Math.round(70 + Math.random() * 8 - 4);
+            const s2 = Math.round(38 + Math.random() * 6 - 4);
             setValues(t, u, s1, s2);
         }
 
-        // Tenta buscar dados reais do ESP32 via /data; se falhar, simula
+        // ─── FETCH / FALLBACK ──────────────────────────────────────────
         function atualizar() {
             fetch('/data', { signal: AbortSignal.timeout(2000) })
                 .then(r => r.json())
-                .then(d => setValues(d.temp, d.umid, d.solo1, d.solo2))
-                .catch(() => simular()); // sem conexao: usa simulacao
+                .then(d => {
+                    document.getElementById('status-text').innerText = 'Online · ESP32 Conectado';
+                    setValues(d.temp, d.umid, d.solo1, d.solo2);
+                })
+                .catch(() => {
+                    document.getElementById('status-text').innerText = 'Demo · Simulação Ativa';
+                    simular();
+                });
         }
 
-        // Primeira carga + ciclo de 3s (mesmo intervalo do servidor)
+        // ─── TOGGLE CONTROLES ──────────────────────────────────────────
+        function toggleCtrl(el) {
+            el.classList.toggle('on');
+            const isOn = el.classList.contains('on');
+            const lbl = el.nextElementSibling;
+            if (el.id === 'toggle-led') lbl.innerText = isOn ? 'ON' : 'OFF';
+            if (el.id === 'toggle-pump') lbl.innerText = isOn ? 'AUTO' : 'OFF';
+            el.style.background = isOn ? 'var(--green)' : 'var(--text-muted)';
+            el.style.boxShadow  = isOn ? '0 0 12px var(--green-glow)' : 'none';
+            lbl.style.color     = isOn ? 'var(--green)' : 'var(--text-muted)';
+        }
+
+        // ─── PRÉ-POPULA HISTÓRICO COM DADOS COERENTES ─────────────────
+        for (let i = 0; i < MAX_HIST - 1; i++) {
+            history.s1.push(Math.round(65 + Math.random() * 16 - 8));
+            history.s2.push(Math.round(35 + Math.random() * 12 - 6));
+        }
+
+        // ─── INICIA ────────────────────────────────────────────────────
         atualizar();
         setInterval(atualizar, 3000);
     </script>
-
 </body>
-
 </html>
