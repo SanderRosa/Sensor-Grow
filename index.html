@@ -257,30 +257,53 @@
             margin: 0 14px 14px;
             background: var(--card);
             border: 1px solid var(--border);
-            border-radius: 16px;
-            padding: 12px 10px;
-            display: flex; align-items: center; justify-content: space-around;
+            border-radius: 18px;
+            padding: 14px 10px;
+            display: flex; align-items: stretch; justify-content: space-around;
             box-shadow: inset 0 1px 0 rgba(0,230,118,0.08);
+            gap: 6px;
         }
-        .ctrl-sep { width:1px; height:28px; background: var(--border); }
-        .ctrl-item { display: flex; align-items: center; gap: 10px; }
-        .ctrl-lbl { font-size: 0.62rem; letter-spacing: 1.5px; text-transform: uppercase; color: var(--muted); font-weight: 700; }
+        .ctrl-sep { width:1px; align-self: stretch; background: var(--border); }
+        .ctrl-item {
+            display: flex; flex-direction: column; align-items: center;
+            gap: 8px; flex: 1;
+        }
+        .ctrl-icon {
+            width: 36px; height: 36px;
+            border-radius: 10px;
+            display: flex; align-items: center; justify-content: center;
+            background: rgba(0,230,118,0.08);
+            border: 1px solid var(--border);
+            transition: background 0.3s, box-shadow 0.3s;
+        }
+        .ctrl-icon svg { width: 18px; height: 18px; transition: color 0.3s, filter 0.3s; }
+        .ctrl-icon.on {
+            background: rgba(0,230,118,0.15);
+            border-color: var(--border2);
+            box-shadow: 0 0 14px rgba(0,230,118,0.2);
+        }
+        .ctrl-icon.on svg { color: var(--green); filter: drop-shadow(0 0 4px var(--glow)); }
+        .ctrl-icon.off svg { color: var(--muted); }
         .toggle {
-            width: 42px; height: 22px; border-radius: 11px; cursor: pointer;
+            width: 38px; height: 20px; border-radius: 10px; cursor: pointer;
             position: relative; transition: background 0.3s, box-shadow 0.3s;
             background: var(--green);
-            box-shadow: 0 0 12px var(--glow-sm);
+            box-shadow: 0 0 10px var(--glow-sm);
         }
         .toggle::after {
             content:''; position:absolute; top:3px; left:3px;
-            width:16px; height:16px; border-radius:50%;
+            width:14px; height:14px; border-radius:50%;
             background: #fff;
             box-shadow: 0 1px 4px rgba(0,0,0,0.4);
             transition: left 0.3s cubic-bezier(.4,0,.2,1);
         }
-        .toggle.on::after { left: 23px; }
-        .toggle.off { background: #2a3a2a; box-shadow: none; }
-        .ctrl-val { font-size: 0.62rem; color: var(--green); font-weight: 700; text-shadow: 0 0 6px var(--glow-sm); }
+        .toggle.on::after { left: 21px; }
+        .toggle.off { background: #1e2e1e; box-shadow: none; }
+        .ctrl-val {
+            font-size: 0.55rem; color: var(--green); font-weight: 700;
+            letter-spacing: 1.5px; text-transform: uppercase;
+            text-shadow: 0 0 6px var(--glow-sm);
+        }
         .ctrl-val.off { color: var(--muted); text-shadow: none; }
 
         /* ── BOTTOM NAV ──────────────────────────────────────── */
@@ -530,21 +553,44 @@
 
     <!-- CONTROLES -->
     <div class="ctrl-row">
+        <!-- LUZ LED -->
         <div class="ctrl-item">
-            <div class="ctrl-lbl">Luz LED</div>
-            <div class="toggle on" id="t-led" onclick="tog(this,'lbl-led','ON','OFF')"></div>
+            <div class="ctrl-icon on" id="icon-led">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round">
+                    <circle cx="12" cy="12" r="5"/>
+                    <line x1="12" y1="1" x2="12" y2="3"/><line x1="12" y1="21" x2="12" y2="23"/>
+                    <line x1="4.22" y1="4.22" x2="5.64" y2="5.64"/><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"/>
+                    <line x1="1" y1="12" x2="3" y2="12"/><line x1="21" y1="12" x2="23" y2="12"/>
+                    <line x1="4.22" y1="19.78" x2="5.64" y2="18.36"/><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"/>
+                </svg>
+            </div>
+            <div class="toggle on" id="t-led" onclick="tog(this,'lbl-led','icon-led','ON','OFF')"></div>
             <div class="ctrl-val" id="lbl-led">ON</div>
         </div>
         <div class="ctrl-sep"></div>
+        <!-- EXAUSTOR -->
         <div class="ctrl-item">
-            <div class="ctrl-lbl">Exaustor</div>
-            <div class="toggle on" id="t-fan" onclick="tog(this,'lbl-fan','ON','OFF')"></div>
+            <div class="ctrl-icon on" id="icon-fan">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round">
+                    <path d="M12 12c1.5-2.5 5-4 7-2.5s2 5.5-1 6.5c-2.5 1-5-1-5-4z"/>
+                    <path d="M12 12c2.5 1.5 4 5 2.5 7s-5.5 2-6.5-1c-1-2.5 1-5 4-5z"/>
+                    <path d="M12 12c-1.5 2.5-5 4-7 2.5S3 9 6 8c2.5-1 5 1 5 4z"/>
+                    <path d="M12 12c-2.5-1.5-4-5-2.5-7s5.5-2 6.5 1c1 2.5-1 5-4 5z"/>
+                    <circle cx="12" cy="12" r="2"/>
+                </svg>
+            </div>
+            <div class="toggle on" id="t-fan" onclick="tog(this,'lbl-fan','icon-fan','ON','OFF')"></div>
             <div class="ctrl-val" id="lbl-fan">ON</div>
         </div>
         <div class="ctrl-sep"></div>
+        <!-- REGA -->
         <div class="ctrl-item">
-            <div class="ctrl-lbl">Rega</div>
-            <div class="toggle on" id="t-pump" onclick="tog(this,'lbl-pump','AUTO','OFF')"></div>
+            <div class="ctrl-icon on" id="icon-pump">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round">
+                    <path d="M12 2c0 0-6 7-6 12a6 6 0 0 0 12 0c0-5-6-12-6-12z"/>
+                </svg>
+            </div>
+            <div class="toggle on" id="t-pump" onclick="tog(this,'lbl-pump','icon-pump','AUTO','OFF')"></div>
             <div class="ctrl-val" id="lbl-pump">AUTO</div>
         </div>
     </div>
@@ -717,12 +763,14 @@ function refresh() {
 }
 
 // ── Toggle controles ────────────────────────────────────────────
-function tog(el, lblId, onTxt, offTxt) {
+function tog(el, lblId, iconId, onTxt, offTxt) {
     el.classList.toggle('on'); el.classList.toggle('off');
     const on = el.classList.contains('on');
     const lbl = document.getElementById(lblId);
     lbl.textContent = on ? onTxt : offTxt;
     lbl.className = 'ctrl-val' + (on ? '' : ' off');
+    const icon = document.getElementById(iconId);
+    if (icon) { icon.className = 'ctrl-icon ' + (on ? 'on' : 'off'); }
 }
 
 // ── Inicia ──────────────────────────────────────────────────────
