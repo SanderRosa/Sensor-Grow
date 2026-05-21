@@ -378,9 +378,161 @@
             border-radius: 1px;
             box-shadow: 0 0 6px var(--green);
         }
+        /* ── NOTIFICAÇÕES ─────────────────────────────────────── */
+        /* Toast stack */
+        #toast-stack {
+            position: fixed; top: 16px; left: 50%; transform: translateX(-50%);
+            width: min(380px, 96vw);
+            display: flex; flex-direction: column; gap: 8px;
+            z-index: 9999; pointer-events: none;
+        }
+        .toast {
+            display: flex; align-items: flex-start; gap: 10px;
+            background: #0d1a0d;
+            border: 1px solid var(--crit-border);
+            border-radius: 14px;
+            padding: 10px 14px;
+            pointer-events: all;
+            box-shadow: 0 4px 24px rgba(0,0,0,0.6), 0 0 20px rgba(255,82,82,0.2);
+            animation: toast-in 0.35s cubic-bezier(.4,0,.2,1);
+            transition: opacity 0.4s, transform 0.4s;
+        }
+        .toast.warn  { border-color: var(--warn-border); box-shadow: 0 4px 24px rgba(0,0,0,0.6), 0 0 16px rgba(255,179,0,0.15); }
+        .toast.removing { opacity: 0; transform: translateY(-12px) scale(0.96); }
+        @keyframes toast-in {
+            from { opacity: 0; transform: translateY(-16px) scale(0.94); }
+            to   { opacity: 1; transform: translateY(0)   scale(1); }
+        }
+        .toast-icon {
+            width: 32px; height: 32px; border-radius: 8px; flex-shrink: 0;
+            display: flex; align-items: center; justify-content: center;
+            background: rgba(255,82,82,0.12); color: var(--crit);
+            font-size: 1rem;
+        }
+        .toast.warn .toast-icon { background: rgba(255,179,0,0.1); color: var(--warn); }
+        .toast-body { flex: 1; min-width: 0; }
+        .toast-title { font-size: 0.72rem; font-weight: 700; letter-spacing: 0.5px; color: var(--crit); margin-bottom: 2px; }
+        .toast.warn .toast-title { color: var(--warn); }
+        .toast-msg   { font-size: 0.62rem; color: #a0b8a0; line-height: 1.4; }
+        .toast-time  { font-size: 0.5rem; color: var(--muted); margin-top: 3px; }
+        .toast-close {
+            background: none; border: none; cursor: pointer;
+            color: var(--muted); font-size: 1rem; line-height: 1;
+            padding: 0 2px; flex-shrink: 0;
+        }
+        .toast-close:hover { color: var(--text); }
+
+        /* Sininho com badge */
+        .bell-btn {
+            position: relative; cursor: pointer;
+            width: 34px; height: 34px;
+            background: rgba(0,230,118,0.07);
+            border: 1px solid var(--border);
+            border-radius: 10px;
+            display: flex; align-items: center; justify-content: center;
+            color: var(--muted); transition: all 0.2s;
+        }
+        .bell-btn:hover { background: rgba(0,230,118,0.12); color: var(--text); }
+        .bell-btn.has-crit { border-color: var(--crit-border); color: var(--crit);
+            box-shadow: 0 0 10px rgba(255,82,82,0.25); animation: bell-shake 0.5s ease-in-out; }
+        .bell-btn.has-warn { border-color: var(--warn-border); color: var(--warn); }
+        @keyframes bell-shake {
+            0%,100%{transform:rotate(0)}
+            20%{transform:rotate(-12deg)}
+            40%{transform:rotate(12deg)}
+            60%{transform:rotate(-8deg)}
+            80%{transform:rotate(8deg)}
+        }
+        .bell-badge {
+            position: absolute; top: -5px; right: -5px;
+            background: var(--crit); color: #fff;
+            font-size: 0.45rem; font-weight: 900;
+            min-width: 16px; height: 16px; border-radius: 8px;
+            display: none; align-items: center; justify-content: center;
+            padding: 0 3px; border: 2px solid var(--bg);
+            font-family: 'Orbitron', monospace;
+        }
+        .bell-badge.visible { display: flex; }
+        .bell-btn svg { width: 17px; height: 17px; }
+
+        /* Painel histórico */
+        #notif-panel {
+            position: fixed; inset: 0;
+            z-index: 9990; display: none; align-items: flex-end; justify-content: center;
+        }
+        #notif-panel.open { display: flex; }
+        #notif-overlay {
+            position: absolute; inset: 0;
+            background: rgba(0,0,0,0.6);
+            backdrop-filter: blur(4px);
+        }
+        #notif-drawer {
+            position: relative; z-index: 1;
+            width: min(400px, 100vw);
+            max-height: 70vh;
+            background: #0a120a;
+            border: 1px solid var(--border2);
+            border-bottom: none;
+            border-radius: 24px 24px 0 0;
+            display: flex; flex-direction: column;
+            box-shadow: 0 -8px 40px rgba(0,0,0,0.7);
+            animation: drawer-in 0.3s cubic-bezier(.4,0,.2,1);
+        }
+        @keyframes drawer-in {
+            from { transform: translateY(100%); }
+            to   { transform: translateY(0); }
+        }
+        #notif-header {
+            display: flex; justify-content: space-between; align-items: center;
+            padding: 16px 20px 12px;
+            border-bottom: 1px solid var(--border);
+            flex-shrink: 0;
+        }
+        #notif-header h2 {
+            font-family: 'Orbitron', monospace; font-size: 0.8rem;
+            font-weight: 700; color: var(--text); letter-spacing: 1px;
+        }
+        #notif-clear {
+            font-size: 0.6rem; color: var(--muted); cursor: pointer; letter-spacing: 1px;
+            text-transform: uppercase; background: none; border: none;
+        }
+        #notif-clear:hover { color: var(--crit); }
+        #notif-list {
+            overflow-y: auto; padding: 12px 16px; display: flex; flex-direction: column; gap: 8px;
+        }
+        .nitem {
+            display: flex; align-items: flex-start; gap: 10px;
+            background: var(--card); border-radius: 12px; padding: 10px 12px;
+            border-left: 3px solid var(--crit);
+        }
+        .nitem.warn { border-left-color: var(--warn); }
+        .nitem-icon { font-size: 1.1rem; flex-shrink: 0; margin-top: 1px; }
+        .nitem-body { flex: 1; }
+        .nitem-title { font-size: 0.68rem; font-weight: 700; color: var(--text); }
+        .nitem-msg   { font-size: 0.58rem; color: #7a9a7a; line-height: 1.4; margin-top: 2px; }
+        .nitem-time  { font-size: 0.48rem; color: var(--muted); margin-top: 4px; }
+        #notif-empty {
+            text-align: center; padding: 30px 20px;
+            font-size: 0.65rem; color: var(--muted); letter-spacing: 1px;
+        }
     </style>
 </head>
 <body>
+<!-- Toast stack -->
+<div id="toast-stack"></div>
+<!-- Painel histórico de notificações -->
+<div id="notif-panel">
+    <div id="notif-overlay" onclick="closePanel()"></div>
+    <div id="notif-drawer">
+        <div id="notif-header">
+            <h2>🔔 Alertas</h2>
+            <button id="notif-clear" onclick="clearNotifs()">Limpar tudo</button>
+        </div>
+        <div id="notif-list">
+            <div id="notif-empty">Nenhum alerta registrado</div>
+        </div>
+    </div>
+</div>
 <div class="app">
 
     <!-- HEADER -->
@@ -398,6 +550,16 @@
             <div class="pill">
                 <div class="pill-dot"></div>
                 <span id="status-text">Online</span>
+            </div>
+            <!-- Botão de teste -->
+            <div class="bell-btn" onclick="runTest()" title="Testar todos os alertas" style="font-size:0.6rem; font-weight:700; color:var(--muted); width:auto; padding:0 8px; letter-spacing:1px;">🧪</div>
+            <!-- Sininho de notificações -->
+            <div class="bell-btn" id="bell-btn" onclick="openPanel()" title="Alertas">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round">
+                    <path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/>
+                    <path d="M13.73 21a2 2 0 0 1-3.46 0"/>
+                </svg>
+                <div class="bell-badge" id="bell-badge">0</div>
             </div>
         </div>
     </header>
@@ -745,7 +907,177 @@ document.getElementById('ticks-umid').innerHTML = '';
 buildTicksFixed('ticks-temp', 25, 80, 80, 74, 68);
 buildTicksFixed('ticks-umid', 25, 80, 80, 74, 68);
 
-// ── Gauge arc e needle ─────────────────────────────────────────
+// ── SISTEMA DE NOTIFICAÇÕES ────────────────────────────────────
+const NOTIF_MESSAGES = {
+    'temp-crit-low':  { icon: '🥶', title: 'Temperatura Crítica', msg: 'Abaixo de 17°C — Metabolismo trava e absorção de fósforo cai drasticamente.' },
+    'temp-warn-low':  { icon: '❄️',  title: 'Temperatura em Atenção', msg: 'Entre 17°C e 20°C — Zona de risco inferior.' },
+    'temp-warn-high': { icon: '🌡️', title: 'Temperatura em Atenção', msg: 'Entre 27°C e 30°C — Estresse térmico se prolongar.' },
+    'temp-crit-high': { icon: '🔥', title: 'Temperatura Crítica', msg: 'Acima de 30°C — Estresse por calor, perda de terpenos e fechamento de estômatos.' },
+    'umid-crit-low':  { icon: '🏜️', title: 'Umidade do Ar Crítica', msg: 'Abaixo de 35% — Ar seco demais, estressa mudas e força transpiração excessiva.' },
+    'umid-warn-low':  { icon: '💨', title: 'Umidade do Ar em Atenção', msg: 'Entre 35% e 44% — Zona de risco inferior.' },
+    'umid-warn-high': { icon: '💧', title: 'Umidade do Ar em Atenção', msg: 'Entre 56% e 65% — Atenção na floração.' },
+    'umid-crit-high': { icon: '🍄', title: 'Umidade do Ar Crítica', msg: 'Acima de 65% — Risco severo de mofo na floração avançada.' },
+    'soil1-crit-low': { icon: '🌵', title: 'Solo Vaso 1 — Murcha', msg: 'Abaixo de 20% — Raízes começam a retrair. Regue imediatamente!' },
+    'soil1-warn-low': { icon: '🪣', title: 'Solo Vaso 1 — Hora de Regar', msg: 'Entre 20% e 34% — Janela ideal para iniciar a rega.' },
+    'soil1-warn-high':{ icon: '🌊', title: 'Solo Vaso 1 — Saturado', msg: 'Entre 71% e 85% — Pouquíssimo O₂ disponível nas raízes.' },
+    'soil1-crit-high':{ icon: '☠️', title: 'Solo Vaso 1 — Anóxico', msg: 'Acima de 85% — Risco de asfixia das raízes. Suspenda a rega!' },
+    'soil2-crit-low': { icon: '🌵', title: 'Solo Vaso 2 — Murcha', msg: 'Abaixo de 20% — Raízes começam a retrair. Regue imediatamente!' },
+    'soil2-warn-low': { icon: '🪣', title: 'Solo Vaso 2 — Hora de Regar', msg: 'Entre 20% e 34% — Janela ideal para iniciar a rega.' },
+    'soil2-warn-high':{ icon: '🌊', title: 'Solo Vaso 2 — Saturado', msg: 'Entre 71% e 85% — Pouquíssimo O₂ disponível nas raízes.' },
+    'soil2-crit-high':{ icon: '☠️', title: 'Solo Vaso 2 — Anóxico', msg: 'Acima de 85% — Risco de asfixia das raízes. Suspenda a rega!' },
+};
+
+// Estado anterior de cada sensor (anti-spam)
+const prevState = {};
+const notifHistory = [];
+let unreadCount = 0;
+
+function getNotifKey(sensor, val, ranges) {
+    if (val < ranges.critLow)   return sensor + '-crit-low';
+    if (val < ranges.warnLow)   return sensor + '-warn-low';
+    if (val > ranges.critHigh)  return sensor + '-crit-high';
+    if (val > ranges.warnHigh)  return sensor + '-warn-high';
+    return sensor + '-ok';
+}
+
+function checkAndNotify(sensor, val, ranges) {
+    const key = getNotifKey(sensor, val, ranges);
+    if (key === prevState[sensor]) return; // sem mudança
+    prevState[sensor] = key;
+    if (key.endsWith('-ok')) return;       // voltou ao normal — sem notificação
+
+    const level = key.includes('crit') ? 'crit' : 'warn';
+    const def = NOTIF_MESSAGES[key];
+    if (!def) return;
+
+    showToast(def.icon, def.title, def.msg, level);
+    addToHistory(def.icon, def.title, def.msg, level);
+    tryNativeNotif(def.title, def.msg, def.icon);
+}
+
+// ── Toast ──────────────────────────────────────────────────────
+function showToast(icon, title, msg, level) {
+    const stack = document.getElementById('toast-stack');
+    const t = document.createElement('div');
+    t.className = 'toast ' + level;
+    const now = new Date().toLocaleTimeString('pt-BR', { hour:'2-digit', minute:'2-digit', second:'2-digit' });
+    t.innerHTML = `
+        <div class="toast-icon">${icon}</div>
+        <div class="toast-body">
+            <div class="toast-title">${title}</div>
+            <div class="toast-msg">${msg}</div>
+            <div class="toast-time">${now}</div>
+        </div>
+        <button class="toast-close" onclick="dismissToast(this.parentElement)">✕</button>`;
+    stack.prepend(t);
+    // Auto-dismiss em 7s
+    setTimeout(() => dismissToast(t), 7000);
+}
+
+function dismissToast(el) {
+    if (!el || !el.parentElement) return;
+    el.classList.add('removing');
+    setTimeout(() => el.remove(), 420);
+}
+
+// ── Histórico / Painel ─────────────────────────────────────────
+function addToHistory(icon, title, msg, level) {
+    const now = new Date().toLocaleTimeString('pt-BR', { hour:'2-digit', minute:'2-digit', second:'2-digit' });
+    notifHistory.unshift({ icon, title, msg, level, time: now });
+    if (notifHistory.length > 50) notifHistory.pop();
+    unreadCount++;
+    const badge = document.getElementById('bell-badge');
+    const bell  = document.getElementById('bell-btn');
+    badge.textContent = unreadCount > 9 ? '9+' : unreadCount;
+    badge.classList.add('visible');
+    bell.className = 'bell-btn ' + (level === 'crit' ? 'has-crit' : 'has-warn');
+    // Reanima o sino
+    bell.style.animation = 'none';
+    void bell.offsetWidth;
+    bell.style.animation = '';
+}
+
+function renderHistory() {
+    const list = document.getElementById('notif-list');
+    const empty = document.getElementById('notif-empty');
+    if (!notifHistory.length) { empty.style.display = 'block'; list.innerHTML = '<div id="notif-empty">Nenhum alerta registrado</div>'; return; }
+    empty.style.display = 'none';
+    list.innerHTML = notifHistory.map(n => `
+        <div class="nitem ${n.level}">
+            <div class="nitem-icon">${n.icon}</div>
+            <div class="nitem-body">
+                <div class="nitem-title">${n.title}</div>
+                <div class="nitem-msg">${n.msg}</div>
+                <div class="nitem-time">${n.time}</div>
+            </div>
+        </div>`).join('');
+}
+
+function openPanel() {
+    unreadCount = 0;
+    document.getElementById('bell-badge').classList.remove('visible');
+    document.getElementById('bell-btn').className = 'bell-btn';
+    renderHistory();
+    document.getElementById('notif-panel').classList.add('open');
+}
+function closePanel() { document.getElementById('notif-panel').classList.remove('open'); }
+function clearNotifs() {
+    notifHistory.length = 0;
+    renderHistory();
+}
+
+// ── Notificação nativa do browser ─────────────────────────────
+async function tryNativeNotif(title, body, icon) {
+    if (!('Notification' in window)) return;
+    if (Notification.permission === 'default') await Notification.requestPermission();
+    if (Notification.permission !== 'granted') return;
+    new Notification('🌿 Smart Grow — ' + title, { body, icon: '/favicon.ico' });
+}
+
+// Solicita permissão assim que o usuário interagir
+document.addEventListener('click', () => {
+    if ('Notification' in window && Notification.permission === 'default')
+        Notification.requestPermission();
+}, { once: true });
+
+// ── RANGES para checkAndNotify ─────────────────────────────────
+const RANGES = {
+    temp:  { critLow: 17, warnLow: 21, warnHigh: 26, critHigh: 30 },
+    umid:  { critLow: 35, warnLow: 45, warnHigh: 55, critHigh: 65 },
+    soil1: { critLow: 20, warnLow: 35, warnHigh: 70, critHigh: 85 },
+    soil2: { critLow: 20, warnLow: 35, warnHigh: 70, critHigh: 85 },
+};
+
+// ── CICLO DE TESTE ─────────────────────────────────────────────
+const TEST_SCENARIOS = [
+    { label: '🧪 Teste: Temp CRÍTICA BAIXA',  t: 15,   u: 50,  s1: 55, s2: 55 },
+    { label: '🧪 Teste: Temp ATENÇÃO',        t: 19,   u: 50,  s1: 55, s2: 55 },
+    { label: '🧪 Teste: Tudo OK',             t: 23,   u: 50,  s1: 55, s2: 55 },
+    { label: '🧪 Teste: Temp CRÍTICA ALTA',   t: 32,   u: 50,  s1: 55, s2: 55 },
+    { label: '🧪 Teste: UR CRÍTICA ALTA',     t: 23,   u: 70,  s1: 55, s2: 55 },
+    { label: '🧪 Teste: UR ATENÇÃO',          t: 23,   u: 60,  s1: 55, s2: 55 },
+    { label: '🧪 Teste: Solo1 MURCHA',        t: 23,   u: 50,  s1: 10, s2: 55 },
+    { label: '🧪 Teste: Solo2 HORA DE REGAR', t: 23,   u: 50,  s1: 55, s2: 28 },
+    { label: '🧪 Teste: Solo SATURADO',       t: 23,   u: 50,  s1: 90, s2: 90 },
+    { label: '🧪 Teste: Normalizar tudo',     t: 23,   u: 50,  s1: 55, s2: 55 },
+];
+let testIdx = 0;
+let testMode = false;
+
+function runTest() {
+    testMode = true;
+    const s = TEST_SCENARIOS[testIdx % TEST_SCENARIOS.length];
+    document.getElementById('status-text').textContent = s.label;
+    setValues(s.t, s.u, s.s1, s.s2);
+    testIdx++;
+    if (testIdx < TEST_SCENARIOS.length) {
+        setTimeout(runTest, 2200);
+    } else {
+        testIdx = 0; testMode = false;
+        document.getElementById('status-text').textContent = 'Simulação';
+        setTimeout(refresh, 500);
+    }
+}
 function setArc(el, pct) {
     const f = Math.min(Math.max(pct, 0), 1);
     el.setAttribute('stroke-dasharray', `${ARC * f} ${C}`);
@@ -876,11 +1208,17 @@ function setValues(t, u, s1, s2) {
     document.getElementById('thermo-s1').style.height = Math.min(s1, 100) + '%';
     document.getElementById('thermo-s2').style.height = Math.min(s2, 100) + '%';
 
-    // Criticidade
+    // Criticidade visual
     applyGaugeStatus('card-temp','val-temp','arc-temp','needle-temp','badge-temp','badge-temp-txt', tempStatus(t));
     applyGaugeStatus('card-umid','val-umid','arc-umid','needle-umid','badge-umid','badge-umid-txt', umidStatus(u));
     applySoilStatus('card-s1', null, 'thermo-s1', soilStatus(s1));
     applySoilStatus('card-s2', null, 'thermo-s2', soilStatus(s2));
+
+    // Notificações (só dispara ao cruzar limiar)
+    checkAndNotify('temp',  t,  RANGES.temp);
+    checkAndNotify('umid',  u,  RANGES.umid);
+    checkAndNotify('soil1', s1, RANGES.soil1);
+    checkAndNotify('soil2', s2, RANGES.soil2);
 
     hist.s1.push(s1); hist.s2.push(s2);
     if (hist.s1.length > MAX) hist.s1.shift();
