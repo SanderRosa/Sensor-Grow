@@ -782,19 +782,39 @@ updateSparks();
 
 // ── Status de criticidade ──────────────────────────────────────
 // Retorna 'ok' | 'warn' | 'crit'
+// ── Umidade do Solo ──────────────────────────────────────────────
+// < 20%       → CRÍTICO (ponto de murcha)
+// 20 – 34%    → ATENÇÃO  (hora de regar)
+// 35 – 70%    → OK       (zona de conforto)
+// 71 – 85%    → ATENÇÃO  (solo saturado)
+// > 85%       → CRÍTICO  (anóxico)
 function soilStatus(v) {
-    if (v <= 30 || v >= 85)         return 'crit';   // extremo
-    if (v <= 40 || v >= 80)         return 'warn';   // limiar pedido
+    if (v < 20 || v > 85)  return 'crit';
+    if (v < 35 || v > 70)  return 'warn';
     return 'ok';
 }
+
+// ── Temperatura ──────────────────────────────────────────────────
+// < 17°C      → CRÍTICO  (metabolismo trava)
+// 17 – 20°C   → ATENÇÃO
+// 21 – 26°C   → OK       (zona segura)
+// 27 – 30°C   → ATENÇÃO
+// > 30°C      → CRÍTICO  (estresse por calor)
 function tempStatus(t) {
-    if (t >= 35 || t <= 10)         return 'crit';
-    if (t >= 30 || t <= 15)         return 'warn';
+    if (t < 17 || t > 30)  return 'crit';
+    if (t < 21 || t > 26)  return 'warn';
     return 'ok';
 }
+
+// ── Umidade Relativa do Ar ───────────────────────────────────────
+// < 35%       → CRÍTICO  (ar seco demais)
+// 35 – 44%    → ATENÇÃO
+// 45 – 55%    → OK       (zona mais versátil)
+// 56 – 65%    → ATENÇÃO
+// > 65%       → CRÍTICO  (risco de mofo)
 function umidStatus(u) {
-    if (u <= 30 || u >= 90)         return 'crit';
-    if (u <= 40 || u >= 80)         return 'warn';
+    if (u < 35 || u > 65)  return 'crit';
+    if (u < 45 || u > 55)  return 'warn';
     return 'ok';
 }
 
