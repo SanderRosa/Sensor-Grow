@@ -378,7 +378,78 @@
             border-radius: 1px;
             box-shadow: 0 0 6px var(--green);
         }
-        /* ── NOTIFICAÇÕES ─────────────────────────────────────── */
+        /* ── HISTÓRICO INLINE ──────────────────────────────────── */
+        .history-card {
+            margin: 0 14px 14px;
+            background: var(--card);
+            border: 1px solid var(--border);
+            border-radius: 18px;
+            overflow: hidden;
+            box-shadow: inset 0 1px 0 rgba(0,230,118,0.08);
+        }
+        .history-head {
+            display: flex; justify-content: space-between; align-items: center;
+            padding: 11px 16px;
+            border-bottom: 1px solid var(--border);
+        }
+        .history-head-left { display: flex; align-items: center; gap: 8px; }
+        .history-head-label {
+            font-size: 0.58rem; letter-spacing: 2.5px; text-transform: uppercase; color: var(--muted);
+        }
+        .history-badge-count {
+            background: var(--crit); color: #fff;
+            font-size: 0.42rem; font-weight: 900;
+            min-width: 16px; height: 16px; border-radius: 8px;
+            display: none; align-items: center; justify-content: center;
+            padding: 0 3px; font-family: 'Orbitron', monospace;
+        }
+        .history-badge-count.show { display: flex; }
+        .history-clear-btn {
+            font-size: 0.52rem; color: var(--muted); cursor: pointer;
+            background: none; border: none; text-transform: uppercase; letter-spacing: 1px;
+            padding: 0; transition: color 0.2s;
+        }
+        .history-clear-btn:hover { color: var(--crit); }
+        .history-body { max-height: 260px; overflow-y: auto; }
+        .history-body::-webkit-scrollbar { width: 3px; }
+        .history-body::-webkit-scrollbar-track { background: transparent; }
+        .history-body::-webkit-scrollbar-thumb { background: var(--border2); border-radius: 2px; }
+        .history-empty {
+            padding: 24px 16px; text-align: center;
+            font-size: 0.6rem; color: var(--muted); letter-spacing: 1.5px;
+            display: flex; flex-direction: column; align-items: center; gap: 8px;
+        }
+        .history-empty-icon { font-size: 1.6rem; opacity: 0.4; }
+        .hitem {
+            display: flex; align-items: flex-start; gap: 10px;
+            padding: 10px 16px;
+            border-bottom: 1px solid rgba(0,230,118,0.06);
+            transition: background 0.2s;
+        }
+        .hitem:last-child { border-bottom: none; }
+        .hitem:hover { background: rgba(0,230,118,0.03); }
+        .hitem-dot {
+            width: 8px; height: 8px; border-radius: 50%; flex-shrink: 0; margin-top: 4px;
+            background: var(--crit); box-shadow: 0 0 6px var(--crit);
+        }
+        .hitem-dot.warn { background: var(--warn); box-shadow: 0 0 6px var(--warn); }
+        .hitem-emoji { font-size: 1rem; flex-shrink: 0; line-height: 1.3; }
+        .hitem-body { flex: 1; min-width: 0; }
+        .hitem-title {
+            font-size: 0.65rem; font-weight: 700; color: var(--text);
+            white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+        }
+        .hitem-msg {
+            font-size: 0.55rem; color: #6a8a6a; line-height: 1.4; margin-top: 1px;
+            display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden;
+        }
+        .hitem-time {
+            font-size: 0.46rem; color: var(--muted); margin-top: 3px;
+            display: flex; align-items: center; gap: 3px;
+        }
+        .hitem-time::before { content: '\25CF'; font-size: 0.3rem; }
+        .hitem-right { flex-shrink: 0; text-align: right; }
+
         /* Toast stack */
         #toast-stack {
             position: fixed; top: 16px; left: 50%; transform: translateX(-50%);
@@ -816,6 +887,24 @@
         </div>
     </div>
 
+    <!-- HISTÓRICO DE NOTIFICAÇÕES -->
+    <div class="sec-label">Histórico de Alertas</div>
+    <div class="history-card">
+        <div class="history-head">
+            <div class="history-head-left">
+                <span class="history-head-label">Últimos Alertas</span>
+                <div class="history-badge-count" id="h-count">0</div>
+            </div>
+            <button class="history-clear-btn" onclick="clearInlineHistory()">Limpar</button>
+        </div>
+        <div class="history-body" id="h-body">
+            <div class="history-empty" id="h-empty">
+                <div class="history-empty-icon">✅</div>
+                <span>Nenhum alerta registrado.<br>Todos os sensores estão na zona segura.</span>
+            </div>
+        </div>
+    </div>
+
     <!-- NAV -->
     <div class="nav">
         <div class="nav-btn active">
@@ -991,10 +1080,46 @@ function addToHistory(icon, title, msg, level) {
     badge.textContent = unreadCount > 9 ? '9+' : unreadCount;
     badge.classList.add('visible');
     bell.className = 'bell-btn ' + (level === 'crit' ? 'has-crit' : 'has-warn');
-    // Reanima o sino
     bell.style.animation = 'none';
     void bell.offsetWidth;
     bell.style.animation = '';
+    updateInlineHistory();
+}
+
+function updateInlineHistory() {
+    const body   = document.getElementById('h-body');
+    const empty  = document.getElementById('h-empty');
+    const count  = document.getElementById('h-count');
+    if (!body) return;
+    if (!notifHistory.length) {
+        body.innerHTML = `<div class="history-empty" id="h-empty">
+            <div class="history-empty-icon">✅</div>
+            <span>Nenhum alerta registrado.<br>Todos os sensores estão na zona segura.</span>
+        </div>`;
+        count.classList.remove('show');
+        return;
+    }
+    count.textContent = notifHistory.length > 99 ? '99+' : notifHistory.length;
+    count.className = 'history-badge-count show';
+    body.innerHTML = notifHistory.slice(0, 8).map(n => `
+        <div class="hitem">
+            <div class="hitem-dot ${n.level === 'warn' ? 'warn' : ''}"></div>
+            <div class="hitem-emoji">${n.icon}</div>
+            <div class="hitem-body">
+                <div class="hitem-title">${n.title}</div>
+                <div class="hitem-msg">${n.msg}</div>
+                <div class="hitem-time">${n.time}</div>
+            </div>
+        </div>`).join('');
+}
+
+function clearInlineHistory() {
+    notifHistory.length = 0;
+    unreadCount = 0;
+    document.getElementById('bell-badge').classList.remove('visible');
+    document.getElementById('bell-btn').className = 'bell-btn';
+    updateInlineHistory();
+    renderHistory();
 }
 
 function renderHistory() {
