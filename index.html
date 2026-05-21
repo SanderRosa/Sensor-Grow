@@ -21,6 +21,13 @@
             --muted:       #3d5c3d;
             --border:      rgba(0,230,118,0.15);
             --border2:     rgba(0,230,118,0.35);
+            /* criticidade */
+            --warn:        #ffb300;
+            --warn-glow:   rgba(255,179,0,0.4);
+            --warn-border: rgba(255,179,0,0.35);
+            --crit:        #ff5252;
+            --crit-glow:   rgba(255,82,82,0.45);
+            --crit-border: rgba(255,82,82,0.4);
         }
 
         *, *::before, *::after { margin:0; padding:0; box-sizing:border-box; }
@@ -111,15 +118,16 @@
             padding: 18px 10px 14px;
             display: flex; flex-direction: column; align-items: center; gap: 4px;
             position: relative; overflow: hidden;
-            /* Glass shimmer top */
             box-shadow:
                 inset 0 1px 0 rgba(0,230,118,0.12),
                 inset 0 -1px 0 rgba(0,0,0,0.4),
                 0 8px 32px rgba(0,0,0,0.5);
+            transition: border-color 0.6s, box-shadow 0.6s;
         }
         /* Cantos decorativos */
         .gauge-card::before, .gauge-card::after {
             content:''; position:absolute; width:14px; height:14px;
+            transition: border-color 0.6s;
         }
         .gauge-card::before {
             top:-1px; left:-1px;
@@ -130,6 +138,15 @@
             bottom:-1px; right:-1px;
             border-bottom: 2px solid var(--green-dim); border-right: 2px solid var(--green-dim);
             border-radius: 0 0 20px 0;
+        }
+        /* Estados de criticidade */
+        .gauge-card.warn  { border-color: var(--warn-border); box-shadow: inset 0 1px 0 rgba(255,179,0,0.1), 0 0 24px rgba(255,179,0,0.12); }
+        .gauge-card.warn::before, .gauge-card.warn::after { border-color: var(--warn) !important; }
+        .gauge-card.crit  { border-color: var(--crit-border); box-shadow: inset 0 1px 0 rgba(255,82,82,0.1), 0 0 24px rgba(255,82,82,0.18); animation: pulse-crit 1.5s ease-in-out infinite; }
+        .gauge-card.crit::before, .gauge-card.crit::after { border-color: var(--crit) !important; }
+        @keyframes pulse-crit {
+            0%,100% { box-shadow: inset 0 1px 0 rgba(255,82,82,0.1), 0 0 24px rgba(255,82,82,0.18); }
+            50%      { box-shadow: inset 0 1px 0 rgba(255,82,82,0.15), 0 0 36px rgba(255,82,82,0.32); }
         }
         /* Reflexo de vidro */
         .gauge-card .glass {
@@ -143,6 +160,25 @@
             font-size: 0.58rem; letter-spacing: 2.5px; text-transform: uppercase;
             color: var(--muted); margin-bottom: 4px;
         }
+
+        /* Badge de status */
+        .gauge-badge {
+            display: inline-flex; align-items: center; gap: 4px;
+            padding: 2px 8px; border-radius: 20px;
+            font-size: 0.5rem; font-weight: 700; letter-spacing: 2px; text-transform: uppercase;
+            background: rgba(0,230,118,0.1); color: var(--green);
+            border: 1px solid rgba(0,230,118,0.25);
+            transition: all 0.5s;
+        }
+        .gauge-badge .bdot {
+            width: 5px; height: 5px; border-radius: 50%;
+            background: var(--green); box-shadow: 0 0 5px var(--green);
+            transition: background 0.5s, box-shadow 0.5s;
+        }
+        .gauge-badge.warn  { background: rgba(255,179,0,0.1); color: var(--warn); border-color: rgba(255,179,0,0.3); }
+        .gauge-badge.warn .bdot  { background: var(--warn); box-shadow: 0 0 5px var(--warn); }
+        .gauge-badge.crit  { background: rgba(255,82,82,0.12); color: var(--crit); border-color: rgba(255,82,82,0.35); }
+        .gauge-badge.crit .bdot  { background: var(--crit); box-shadow: 0 0 5px var(--crit); animation: blink 0.8s ease-in-out infinite; }
 
         /* SVG GAUGE */
         .gauge-svg-wrap { position: relative; width: 148px; height: 148px; }
@@ -158,7 +194,10 @@
             font-size: 2rem; font-weight: 900; line-height: 1;
             color: var(--text);
             text-shadow: 0 0 20px var(--glow), 0 0 8px var(--glow);
+            transition: color 0.5s, text-shadow 0.5s;
         }
+        .gauge-num.warn { color: var(--warn); text-shadow: 0 0 20px var(--warn-glow), 0 0 8px var(--warn-glow); }
+        .gauge-num.crit { color: var(--crit); text-shadow: 0 0 20px var(--crit-glow), 0 0 8px var(--crit-glow); }
         .gauge-unit {
             font-size: 0.7rem; color: var(--muted); margin-top: 2px;
             font-family: 'Rajdhani', sans-serif; letter-spacing: 1px;
@@ -184,17 +223,25 @@
             padding: 14px 14px 12px;
             position: relative; overflow: hidden;
             box-shadow: inset 0 1px 0 rgba(0,230,118,0.1), 0 6px 20px rgba(0,0,0,0.4);
+            transition: border-color 0.6s, box-shadow 0.6s;
         }
         .soil-card::before {
             content:''; position:absolute; top:-1px; left:-1px; width:12px; height:12px;
             border-top: 2px solid var(--green-dim); border-left: 2px solid var(--green-dim);
-            border-radius: 18px 0 0 0;
+            border-radius: 18px 0 0 0; transition: border-color 0.6s;
         }
+        .soil-card.warn { border-color: var(--warn-border); }
+        .soil-card.warn::before { border-color: var(--warn) !important; }
+        .soil-card.crit { border-color: var(--crit-border); animation: pulse-crit 1.5s ease-in-out infinite; }
+        .soil-card.crit::before { border-color: var(--crit) !important; }
 
         .soil-name {
             font-size: 0.58rem; letter-spacing: 2px; text-transform: uppercase;
             color: var(--green-dim); font-weight: 700; margin-bottom: 1px;
+            transition: color 0.5s;
         }
+        .soil-card.warn .soil-name { color: var(--warn); }
+        .soil-card.crit .soil-name { color: var(--crit); }
         .soil-sub { font-size: 0.5rem; color: var(--muted); margin-bottom: 10px; }
 
         .soil-big {
@@ -360,17 +407,27 @@
     <div class="gauge-grid">
 
         <!-- TEMPERATURA -->
-        <div class="gauge-card">
+        <div class="gauge-card" id="card-temp">
             <div class="glass"></div>
             <div class="gauge-tag">Temperatura</div>
             <div class="gauge-svg-wrap">
                 <svg class="gauge-svg" viewBox="0 0 160 160">
                     <defs>
-                        <!-- Gradiente do arco ativo -->
+                        <!-- Gradiente OK -->
                         <linearGradient id="arcGrad" x1="0%" y1="0%" x2="100%" y2="0%">
                             <stop offset="0%"   stop-color="#00c853"/>
                             <stop offset="60%"  stop-color="#00e676"/>
                             <stop offset="100%" stop-color="#69f0ae"/>
+                        </linearGradient>
+                        <!-- Gradiente WARN -->
+                        <linearGradient id="arcWarn" x1="0%" y1="0%" x2="100%" y2="0%">
+                            <stop offset="0%"   stop-color="#e65100"/>
+                            <stop offset="100%" stop-color="#ffb300"/>
+                        </linearGradient>
+                        <!-- Gradiente CRIT -->
+                        <linearGradient id="arcCrit" x1="0%" y1="0%" x2="100%" y2="0%">
+                            <stop offset="0%"   stop-color="#b71c1c"/>
+                            <stop offset="100%" stop-color="#ff5252"/>
                         </linearGradient>
                         <!-- Filtro glow -->
                         <filter id="glow" x="-30%" y="-30%" width="160%" height="160%">
@@ -430,10 +487,11 @@
                 </div>
             </div>
             <div class="gauge-hint">Ideal: 22 – 26 °C</div>
+            <div class="gauge-badge" id="badge-temp"><div class="bdot"></div><span id="badge-temp-txt">OK</span></div>
         </div>
 
         <!-- UMIDADE DO AR -->
-        <div class="gauge-card">
+        <div class="gauge-card" id="card-umid">
             <div class="glass"></div>
             <div class="gauge-tag">Umidade do Ar</div>
             <div class="gauge-svg-wrap">
@@ -471,6 +529,7 @@
                 </div>
             </div>
             <div class="gauge-hint">Ideal: 60 – 70 %</div>
+            <div class="gauge-badge" id="badge-umid"><div class="bdot"></div><span id="badge-umid-txt">OK</span></div>
         </div>
     </div>
 
@@ -478,7 +537,7 @@
     <div class="sec-label">Umidade do Solo</div>
     <div class="soil-grid">
         <!-- VASO 1 -->
-        <div class="soil-card">
+        <div class="soil-card" id="card-s1">
             <div class="soil-name">Vaso 1</div>
             <div class="soil-sub">Sensor Capacitivo</div>
             <div class="soil-big" id="val-soil1">-- <span>%</span></div>
@@ -496,7 +555,7 @@
             </div>
         </div>
         <!-- VASO 2 -->
-        <div class="soil-card">
+        <div class="soil-card" id="card-s2">
             <div class="soil-name">Vaso 2</div>
             <div class="soil-sub">Sensor Capacitivo</div>
             <div class="soil-big" id="val-soil2">-- <span>%</span></div>
@@ -721,7 +780,65 @@ function updateSparks() {
 }
 updateSparks();
 
-// ── Aplicar valores ─────────────────────────────────────────────
+// ── Status de criticidade ──────────────────────────────────────
+// Retorna 'ok' | 'warn' | 'crit'
+function soilStatus(v) {
+    if (v <= 30 || v >= 85)         return 'crit';   // extremo
+    if (v <= 40 || v >= 80)         return 'warn';   // limiar pedido
+    return 'ok';
+}
+function tempStatus(t) {
+    if (t >= 35 || t <= 10)         return 'crit';
+    if (t >= 30 || t <= 15)         return 'warn';
+    return 'ok';
+}
+function umidStatus(u) {
+    if (u <= 30 || u >= 90)         return 'crit';
+    if (u <= 40 || u >= 80)         return 'warn';
+    return 'ok';
+}
+
+const STATUS_LABELS = { ok: 'OK', warn: 'ATENÇÃO', crit: 'CRÍTICO' };
+const ARC_GRAD = { ok: 'url(#arcGrad)', warn: 'url(#arcWarn)', crit: 'url(#arcCrit)' };
+
+function applyGaugeStatus(cardId, numId, arcId, needleId, badgeId, badgeTxtId, status) {
+    const card   = document.getElementById(cardId);
+    const num    = document.getElementById(numId);
+    const arc    = document.getElementById(arcId);
+    const needle = document.getElementById(needleId);
+    const badge  = document.getElementById(badgeId);
+    const btxt   = document.getElementById(badgeTxtId);
+    if (!card) return;
+
+    card.className   = 'gauge-card ' + status;
+    num.className    = 'gauge-num '  + status;
+    if (badge)  badge.className  = 'gauge-badge ' + status;
+    if (btxt)   btxt.textContent  = STATUS_LABELS[status];
+    if (arc)    arc.setAttribute('stroke', ARC_GRAD[status]);
+
+    // Cor do ponteiro e centro
+    const col = status === 'crit' ? 'var(--crit)' : status === 'warn' ? 'var(--warn)' : 'var(--green)';
+    if (needle) needle.setAttribute('stroke', col);
+}
+
+function applySoilStatus(cardId, nameId, thermoId, status) {
+    const card  = document.getElementById(cardId);
+    const therm = document.getElementById(thermoId);
+    if (card)  card.className  = 'soil-card ' + status;
+    const col = status === 'crit' ? 'var(--crit)' : status === 'warn' ? 'var(--warn)' : 'var(--green-dim)';
+    if (therm) {
+        therm.style.background = status === 'crit'
+            ? 'linear-gradient(to top, #b71c1c, #ff5252, rgba(255,82,82,0.4))'
+            : status === 'warn'
+            ? 'linear-gradient(to top, #e65100, #ffb300, rgba(255,179,0,0.4))'
+            : 'linear-gradient(to top, var(--green-dim), var(--green), rgba(105,240,174,0.5))';
+        therm.style.boxShadow = status === 'crit'
+            ? '0 -6px 20px rgba(255,82,82,0.5)'
+            : status === 'warn'
+            ? '0 -6px 20px rgba(255,179,0,0.4)'
+            : '0 -6px 20px var(--glow)';
+    }
+}
 function setValues(t, u, s1, s2) {
     t = parseFloat(t)||0; u = parseFloat(u)||0;
     s1 = parseInt(s1)||0; s2 = parseInt(s2)||0;
@@ -738,6 +855,12 @@ function setValues(t, u, s1, s2) {
 
     document.getElementById('thermo-s1').style.height = Math.min(s1, 100) + '%';
     document.getElementById('thermo-s2').style.height = Math.min(s2, 100) + '%';
+
+    // Criticidade
+    applyGaugeStatus('card-temp','val-temp','arc-temp','needle-temp','badge-temp','badge-temp-txt', tempStatus(t));
+    applyGaugeStatus('card-umid','val-umid','arc-umid','needle-umid','badge-umid','badge-umid-txt', umidStatus(u));
+    applySoilStatus('card-s1', null, 'thermo-s1', soilStatus(s1));
+    applySoilStatus('card-s2', null, 'thermo-s2', soilStatus(s2));
 
     hist.s1.push(s1); hist.s2.push(s2);
     if (hist.s1.length > MAX) hist.s1.shift();
